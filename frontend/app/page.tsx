@@ -50,17 +50,17 @@ const mockTasks = [
     priority: 'P2',
     status: 'completed',
     estimated_minutes: 120,
-    actual_minutes: 95,
+    actual_minutes: 115,
     time_block: 'afternoon',
     category: 'design',
     progress: 100,
     tags: ['resources', 'design', 'templates'],
     subtasks: [
-      { id: '3a', title: 'Create email templates', completed: true },
+      { id: '3a', title: 'Create swipe copy templates', completed: true },
       { id: '3b', title: 'Design social media assets', completed: true },
-      { id: '3c', title: 'Write brand guidelines', completed: true }
+      { id: '3c', title: 'Develop brand guidelines', completed: true }
     ],
-    success_criteria: 'Complete resource pack with 10+ templates and assets'
+    success_criteria: 'Complete resource pack with all marketing materials'
   },
   {
     id: '4',
@@ -71,123 +71,101 @@ const mockTasks = [
     estimated_minutes: 90,
     actual_minutes: 0,
     time_block: 'afternoon',
-    category: 'analytics',
+    category: 'development',
     progress: 0,
     tags: ['analytics', 'tracking', 'metrics'],
     subtasks: [],
-    success_criteria: 'Real-time dashboard showing all key affiliate metrics'
+    success_criteria: 'Fully functional analytics dashboard with real-time metrics'
   }
 ]
 
-// Time block configuration
-const timeBlocks = [
-  { id: 'morning', name: 'Morning Focus', time: '9:00 AM - 12:00 PM', color: 'var(--warning-500)', icon: '🌅' },
-  { id: 'afternoon', name: 'Afternoon Deep Work', time: '1:00 PM - 5:00 PM', color: 'var(--brand-primary-500)', icon: '☀️' },
-  { id: 'evening', name: 'Evening Review', time: '6:00 PM - 8:00 PM', color: 'var(--success-500)', icon: '🌙' }
-]
-
-// Get current time context
-const getCurrentTimeBlock = () => {
-  const hour = new Date().getHours()
-  if (hour >= 9 && hour < 12) return 'morning'
-  if (hour >= 13 && hour < 17) return 'afternoon'
-  if (hour >= 18 && hour < 20) return 'evening'
-  return 'morning' // default
-}
-
-export default function Dashboard() {
-  const [selectedDate, setSelectedDate] = useState('2025-09-29')
+export default function TaskDashboard() {
   const [tasks] = useState(mockTasks)
-  const [currentTimeBlock, setCurrentTimeBlock] = useState('')
+  const [viewMode, setViewMode] = useState('swim')
+  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0])
   const [focusMode, setFocusMode] = useState(false)
-  const [viewMode, setViewMode] = useState<'swim-lanes' | 'list' | 'kanban'>('swim-lanes')
 
-  useEffect(() => {
-    setCurrentTimeBlock(getCurrentTimeBlock())
-    // Update current time block every minute
-    const interval = setInterval(() => {
-      setCurrentTimeBlock(getCurrentTimeBlock())
-    }, 60000)
-    return () => clearInterval(interval)
-  }, [])
-
-  // Calculate statistics
+  // Calculate stats
+  const totalTasks = tasks.length
   const completedTasks = tasks.filter(task => task.status === 'completed').length
   const inProgressTasks = tasks.filter(task => task.status === 'in_progress').length
-  const totalTasks = tasks.length
-  const completionPercentage = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0
+  const estimatedHours = Math.round(tasks.reduce((sum, task) => sum + task.estimated_minutes, 0) / 60)
+  const completionPercentage = Math.round((completedTasks / totalTasks) * 100)
 
-  const totalEstimated = tasks.reduce((sum, task) => sum + task.estimated_minutes, 0)
-  const totalActual = tasks.reduce((sum, task) => sum + task.actual_minutes, 0)
-
-  // Get current task suggestion
-  const getCurrentTaskSuggestion = () => {
-    const currentBlockTasks = tasks.filter(t => t.time_block === currentTimeBlock && t.status !== 'completed')
-    const p1Tasks = currentBlockTasks.filter(t => t.priority === 'P1')
-    if (p1Tasks.length > 0) return p1Tasks[0]
-    if (currentBlockTasks.length > 0) return currentBlockTasks[0]
-    return null
+  // Get current time block based on hour
+  const getCurrentTimeBlock = () => {
+    const hour = new Date().getHours()
+    if (hour < 12) return 'Morning Focus'
+    if (hour < 17) return 'Afternoon Deep Work'
+    return 'Evening Review'
   }
 
-  const suggestedTask = getCurrentTaskSuggestion()
-
-  // Get tasks by time block for swim lanes view
-  const getTasksByTimeBlock = () => {
-    return timeBlocks.map(block => ({
-      ...block,
-      tasks: tasks.filter(task => task.time_block === block.id)
-    }))
+  // Get tasks by time block
+  const getTasksByTimeBlock = (timeBlock: string) => {
+    return tasks.filter(task => {
+      if (timeBlock === 'morning') return task.time_block === 'morning'
+      if (timeBlock === 'afternoon') return task.time_block === 'afternoon'
+      if (timeBlock === 'evening') return task.time_block === 'evening'
+      return false
+    })
   }
 
-  const TaskCard = ({ task, isCurrentBlock = false, isSuggested = false }: {
-    task: any,
-    isCurrentBlock?: boolean,
-    isSuggested?: boolean
-  }) => (
-    <div
-      className={`card hover-lift ${isSuggested ? 'card-elevated' : ''} ${task.status === 'completed' ? 'opacity-75' : ''}`}
-      style={{
-        borderLeft: task.priority === 'P1' ? '4px solid var(--critical-500)' :
-                  task.priority === 'P2' ? '4px solid var(--warning-500)' :
-                  '4px solid var(--brand-primary-500)',
-        ...(isSuggested && {
-          boxShadow: 'var(--shadow-brand)',
-          transform: 'scale(1.02)'
-        })
-      }}
-    >
+  // Priority colors
+  const getPriorityColor = (priority: string) => {
+    switch (priority) {
+      case 'P1': return 'bg-red-100 text-red-800 border-red-200'
+      case 'P2': return 'bg-orange-100 text-orange-800 border-orange-200'
+      case 'P3': return 'bg-blue-100 text-blue-800 border-blue-200'
+      default: return 'bg-gray-100 text-gray-800 border-gray-200'
+    }
+  }
+
+  // Status colors
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'completed': return 'bg-green-100 text-green-800 border-green-200'
+      case 'in_progress': return 'bg-blue-100 text-blue-800 border-blue-200'
+      case 'blocked': return 'bg-red-100 text-red-800 border-red-200'
+      default: return 'bg-gray-100 text-gray-800 border-gray-200'
+    }
+  }
+
+  // Time block icon
+  const getTimeBlockIcon = (timeBlock: string) => {
+    switch (timeBlock) {
+      case 'morning': return '🌅'
+      case 'afternoon': return '☀️'
+      case 'evening': return '🌙'
+      default: return '⏰'
+    }
+  }
+
+  // Render enhanced task card
+  const renderTaskCard = (task: any, isSuggested = false) => (
+    <div key={task.id} className={`bg-white rounded-xl border shadow-sm transition-all duration-200 hover:shadow-md hover:border-slate-300 ${isSuggested ? 'ring-2 ring-purple-200 border-purple-200' : 'border-slate-200'}`}>
       <div className="p-6">
         {/* Header */}
         <div className="flex items-start justify-between mb-4">
-          <div className="flex items-center gap-3 flex-1 min-w-0">
-            <span className={`priority-badge priority-${task.priority.toLowerCase()}`}>
+          <div className="flex items-center gap-3">
+            <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold border ${getPriorityColor(task.priority)}`}>
               {task.priority}
             </span>
-            <span className={`status-badge status-${task.status.replace('_', '-')}`}>
+            <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${getStatusColor(task.status)}`}>
               {task.status.replace('_', ' ')}
             </span>
-            {isSuggested && (
-              <span className="px-2 py-1 text-xs font-semibold rounded-full" style={{
-                background: 'var(--brand-primary-100)',
-                color: 'var(--brand-primary-700)'
-              }}>
-                ⚡ Suggested
-              </span>
-            )}
           </div>
-
-          <div className="flex items-center gap-2 text-xs" style={{ color: 'var(--text-tertiary)' }}>
-            <span>{timeBlocks.find(b => b.id === task.time_block)?.icon}</span>
-            <span>{task.estimated_minutes}m</span>
+          <div className="flex items-center gap-2 text-sm text-slate-500">
+            <span>{getTimeBlockIcon(task.time_block)}</span>
+            <span className="font-medium">{task.estimated_minutes}m</span>
           </div>
         </div>
 
-        {/* Content */}
+        {/* Title and Description */}
         <div className="mb-4">
-          <h3 className={`task-title mb-2 ${task.status === 'completed' ? 'task-title--completed' : ''}`}>
+          <h3 className={`text-xl font-semibold text-slate-900 mb-2 ${task.status === 'completed' ? 'line-through text-slate-500' : ''}`}>
             {task.title}
           </h3>
-          <p className="task-description">
+          <p className="text-slate-600 leading-relaxed">
             {task.description}
           </p>
         </div>
@@ -195,41 +173,45 @@ export default function Dashboard() {
         {/* Progress */}
         {task.progress > 0 && (
           <div className="mb-4">
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-xs" style={{ color: 'var(--text-secondary)' }}>Progress</span>
-              <span className="text-xs font-medium">{task.progress}%</span>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-medium text-slate-700">Progress</span>
+              <span className="text-sm font-semibold text-slate-900">{task.progress}%</span>
             </div>
-            <div className="progress-bar">
+            <div className="w-full bg-slate-200 rounded-full h-2">
               <div
-                className={`progress-fill ${task.status === 'completed' ? 'progress-fill--completed' : ''}`}
+                className={`h-2 rounded-full transition-all duration-300 ${
+                  task.status === 'completed' ? 'bg-green-500' : 'bg-blue-500'
+                }`}
                 style={{ width: `${task.progress}%` }}
               />
             </div>
           </div>
         )}
 
-        {/* Subtasks Preview */}
+        {/* Subtasks */}
         {task.subtasks.length > 0 && (
           <div className="mb-4">
-            <div className="flex items-center justify-between text-xs mb-2" style={{ color: 'var(--text-secondary)' }}>
-              <span>Subtasks</span>
-              <span>{task.subtasks.filter((st: Subtask) => st.completed).length}/{task.subtasks.length}</span>
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-sm font-medium text-slate-700">Subtasks</span>
+              <span className="text-sm font-semibold text-slate-500">
+                {task.subtasks.filter((st: Subtask) => st.completed).length}/{task.subtasks.length}
+              </span>
             </div>
-            <div className="flex gap-1">
-              {task.subtasks.slice(0, 5).map((subtask: Subtask, index: number) => (
+            <div className="flex gap-2">
+              {task.subtasks.slice(0, 6).map((subtask: Subtask, index: number) => (
                 <div
                   key={subtask.id}
-                  className="w-3 h-3 rounded-full border"
-                  style={{
-                    background: subtask.completed ? 'var(--success-500)' : 'var(--background-tertiary)',
-                    borderColor: subtask.completed ? 'var(--success-500)' : 'var(--border-secondary)'
-                  }}
+                  className={`w-3 h-3 rounded-full border-2 ${
+                    subtask.completed
+                      ? 'bg-green-500 border-green-500'
+                      : 'bg-slate-100 border-slate-300'
+                  }`}
                   title={subtask.title}
                 />
               ))}
-              {task.subtasks.length > 5 && (
-                <span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
-                  +{task.subtasks.length - 5}
+              {task.subtasks.length > 6 && (
+                <span className="text-xs text-slate-400 ml-1">
+                  +{task.subtasks.length - 6} more
                 </span>
               )}
             </div>
@@ -238,27 +220,25 @@ export default function Dashboard() {
 
         {/* Tags */}
         {task.tags.length > 0 && (
-          <div className="flex flex-wrap gap-1">
-            {task.tags.map((tag: string) => (
-              <span
-                key={tag}
-                className="px-2 py-1 text-xs rounded-md"
-                style={{
-                  background: 'var(--background-tertiary)',
-                  color: 'var(--text-secondary)'
-                }}
-              >
-                #{tag}
-              </span>
-            ))}
+          <div className="mb-4">
+            <div className="flex flex-wrap gap-2">
+              {task.tags.map((tag: string) => (
+                <span
+                  key={tag}
+                  className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-slate-100 text-slate-700"
+                >
+                  #{tag}
+                </span>
+              ))}
+            </div>
           </div>
         )}
 
-        {/* Quick Actions */}
+        {/* Action Button */}
         {isSuggested && task.status !== 'completed' && (
-          <div className="mt-4 pt-4 border-t" style={{ borderColor: 'var(--border-primary)' }}>
-            <button className="btn btn-primary btn-sm w-full">
-              Start Working
+          <div className="pt-4 border-t border-slate-100">
+            <button className="w-full bg-gradient-to-r from-purple-500 to-blue-500 text-white font-semibold py-3 px-4 rounded-lg hover:from-purple-600 hover:to-blue-600 transition-all duration-200 transform hover:scale-[1.02]">
+              ⚡ Start Working
             </button>
           </div>
         )}
@@ -266,218 +246,184 @@ export default function Dashboard() {
     </div>
   )
 
-  return (
-    <div className="space-y-8">
-      {/* Smart Dashboard Header */}
-      <div className="relative">
-        {/* Focus Mode Overlay */}
-        {focusMode && (
-          <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-purple-500/10 rounded-xl pointer-events-none" />
-        )}
+  // Get current recommendation
+  const currentRecommendation = tasks.find(task =>
+    task.status === 'not_started' && task.priority === 'P1'
+  )
 
-        <div className="card card-elevated p-8">
-          <div className="flex items-start justify-between mb-6">
-            <div>
-              <div className="flex items-center gap-3 mb-2">
-                <h1 className="text-3xl font-bold" style={{ color: 'var(--text-primary)' }}>
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/30">
+      <div className="max-w-7xl mx-auto px-6 py-8">
+
+        {/* Dashboard Header */}
+        <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/50 p-8 mb-8">
+          <div className="flex items-start justify-between mb-8">
+            <div className="space-y-2">
+              <div className="flex items-center gap-4">
+                <h1 className="text-4xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">
                   Today's Mission
                 </h1>
                 {focusMode && (
-                  <div className="flex items-center gap-2 px-3 py-1 rounded-full" style={{
-                    background: 'var(--brand-primary-100)',
-                    color: 'var(--brand-primary-700)'
-                  }}>
-                    <div className="w-2 h-2 rounded-full" style={{ background: 'var(--brand-primary-500)' }} />
-                    <span className="text-sm font-medium">Focus Mode</span>
+                  <div className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-100 to-blue-100 text-purple-700 rounded-full border border-purple-200">
+                    <div className="w-2 h-2 rounded-full bg-purple-500 animate-pulse" />
+                    <span className="text-sm font-semibold">Focus Mode Active</span>
                   </div>
                 )}
               </div>
-              <p className="text-lg" style={{ color: 'var(--text-secondary)' }}>
-                {completedTasks} of {totalTasks} tasks completed • {completionPercentage}% complete
+              <p className="text-xl text-slate-600">
+                <span className="font-semibold text-slate-800">{completedTasks}</span> of <span className="font-semibold text-slate-800">{totalTasks}</span> tasks completed • <span className="font-semibold text-emerald-600">{completionPercentage}%</span> complete
               </p>
             </div>
 
             <div className="flex items-center gap-4">
-              {/* View Mode Toggle */}
-              <div className="flex items-center rounded-lg p-1" style={{ background: 'var(--background-tertiary)' }}>
-                {(['swim-lanes', 'list', 'kanban'] as const).map((mode) => (
+              {/* View Mode Switcher */}
+              <div className="flex bg-slate-100/80 rounded-xl p-1 border border-slate-200/50">
+                {['swim', 'list', 'kanban'].map((mode) => (
                   <button
                     key={mode}
                     onClick={() => setViewMode(mode)}
-                    className={`px-3 py-2 text-xs font-medium rounded-md transition-all ${
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all capitalize ${
                       viewMode === mode
-                        ? 'bg-white shadow-sm'
-                        : 'hover:bg-white/50'
+                        ? 'bg-white text-slate-900 shadow-sm border border-slate-200'
+                        : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
                     }`}
                   >
-                    {mode === 'swim-lanes' ? 'Swim Lanes' : mode === 'list' ? 'List' : 'Kanban'}
+                    {mode}
                   </button>
                 ))}
               </div>
 
-              {/* Date Picker */}
-              <input
-                type="date"
-                value={selectedDate}
-                onChange={(e) => setSelectedDate(e.target.value)}
-                className="input"
-              />
-
-              {/* Focus Mode Toggle */}
-              <button
-                onClick={() => setFocusMode(!focusMode)}
-                className={`btn ${focusMode ? 'btn-primary' : 'btn-secondary'}`}
-              >
-                {focusMode ? 'Exit Focus' : 'Focus Mode'}
-              </button>
-
-              <button className="btn btn-secondary">
-                Refresh
-              </button>
+              {/* Controls */}
+              <div className="flex items-center gap-3">
+                <input
+                  type="date"
+                  value={selectedDate}
+                  onChange={(e) => setSelectedDate(e.target.value)}
+                  className="px-3 py-2 bg-white/80 border border-slate-200 rounded-lg text-sm font-medium focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                />
+                <button
+                  onClick={() => setFocusMode(!focusMode)}
+                  className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
+                    focusMode
+                      ? 'bg-gradient-to-r from-purple-500 to-blue-500 text-white shadow-md'
+                      : 'bg-white/80 text-slate-700 hover:bg-white border border-slate-200'
+                  }`}
+                >
+                  Focus Mode
+                </button>
+                <button className="px-4 py-2 bg-white/80 text-slate-700 rounded-lg text-sm font-semibold hover:bg-white border border-slate-200 transition-colors">
+                  Refresh
+                </button>
+              </div>
             </div>
           </div>
 
-          {/* Progress Overview */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-            <div className="text-center">
-              <div className="text-2xl font-bold mb-1" style={{ color: 'var(--success-600)' }}>
-                {completedTasks}
-              </div>
-              <div className="text-sm" style={{ color: 'var(--text-secondary)' }}>Completed</div>
+          {/* Stats Grid */}
+          <div className="grid grid-cols-4 gap-6">
+            <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200/50 rounded-xl p-6 text-center">
+              <div className="text-3xl font-bold text-green-700 mb-2">{completedTasks}</div>
+              <div className="text-sm font-semibold text-green-600">Tasks Completed</div>
             </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold mb-1" style={{ color: 'var(--brand-primary-600)' }}>
-                {inProgressTasks}
-              </div>
-              <div className="text-sm" style={{ color: 'var(--text-secondary)' }}>In Progress</div>
+            <div className="bg-gradient-to-r from-blue-50 to-cyan-50 border border-blue-200/50 rounded-xl p-6 text-center">
+              <div className="text-3xl font-bold text-blue-700 mb-2">{inProgressTasks}</div>
+              <div className="text-sm font-semibold text-blue-600">In Progress</div>
             </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold mb-1" style={{ color: 'var(--warning-600)' }}>
-                {Math.round(totalEstimated / 60)}h
-              </div>
-              <div className="text-sm" style={{ color: 'var(--text-secondary)' }}>Estimated</div>
+            <div className="bg-gradient-to-r from-slate-50 to-gray-50 border border-slate-200/50 rounded-xl p-6 text-center">
+              <div className="text-3xl font-bold text-slate-700 mb-2">{estimatedHours}<span className="text-xl">h</span></div>
+              <div className="text-sm font-semibold text-slate-600">Time Estimated</div>
             </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold mb-1" style={{ color: 'var(--text-primary)' }}>
-                {completionPercentage}%
-              </div>
-              <div className="text-sm" style={{ color: 'var(--text-secondary)' }}>Progress</div>
-            </div>
-          </div>
-
-          {/* Overall Progress Bar */}
-          <div className="progress-container">
-            <div className="progress-bar" style={{ height: 'var(--space-3)' }}>
-              <div
-                className="progress-fill"
-                style={{ width: `${completionPercentage}%` }}
-              />
+            <div className="bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-200/50 rounded-xl p-6 text-center">
+              <div className="text-3xl font-bold text-orange-700 mb-2">{completionPercentage}<span className="text-xl">%</span></div>
+              <div className="text-sm font-semibold text-orange-600">Progress Made</div>
             </div>
           </div>
         </div>
-      </div>
 
-      {/* AI Suggestion Card */}
-      {suggestedTask && !focusMode && (
-        <div className="animate-slide-down">
-          <div className="mb-4 flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: 'var(--gradient-brand)' }}>
-              <span className="text-white text-sm">🤖</span>
+        {/* AI Recommendation Panel */}
+        {currentRecommendation && (
+          <div className="bg-gradient-to-r from-purple-50/80 to-blue-50/80 backdrop-blur-sm border border-purple-200/50 rounded-2xl p-8 mb-8">
+            <div className="flex items-center gap-4 mb-6">
+              <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-blue-500 rounded-xl flex items-center justify-center shadow-lg">
+                <span className="text-2xl">🤖</span>
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold text-slate-900">AI Recommendation</h2>
+                <p className="text-slate-600">
+                  Based on your current time block: <span className="font-semibold text-slate-800">{getCurrentTimeBlock()}</span>
+                </p>
+              </div>
             </div>
-            <div>
-              <h2 className="text-lg font-semibold" style={{ color: 'var(--text-primary)' }}>
-                AI Recommendation
-              </h2>
-              <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-                Based on your current time block ({timeBlocks.find(b => b.id === currentTimeBlock)?.name})
-              </p>
-            </div>
+            {renderTaskCard(currentRecommendation, true)}
           </div>
-          <TaskCard task={suggestedTask} isCurrentBlock={true} isSuggested={true} />
-        </div>
-      )}
+        )}
 
-      {/* Main Content Area */}
-      {viewMode === 'swim-lanes' && (
+        {/* Time Blocks */}
         <div className="space-y-8">
-          {getTasksByTimeBlock().map((timeBlock) => {
-            const isCurrentBlock = timeBlock.id === currentTimeBlock
-            return (
-              <div key={timeBlock.id} className="animate-fade-in">
-                {/* Time Block Header */}
-                <div className="flex items-center gap-4 mb-6">
-                  <div
-                    className="w-4 h-4 rounded-full"
-                    style={{ background: timeBlock.color }}
-                  />
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3">
-                      <h2 className="text-xl font-semibold" style={{ color: 'var(--text-primary)' }}>
-                        {timeBlock.icon} {timeBlock.name}
-                      </h2>
-                      {isCurrentBlock && (
-                        <span className="px-2 py-1 text-xs font-medium rounded-full" style={{
-                          background: 'var(--success-100)',
-                          color: 'var(--success-700)'
-                        }}>
-                          Current
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-                      {timeBlock.time} • {timeBlock.tasks.length} tasks
-                    </p>
-                  </div>
+          {/* Morning Focus */}
+          <div className="bg-white/60 backdrop-blur-sm rounded-2xl border border-white/50 p-8">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 bg-gradient-to-r from-orange-400 to-yellow-400 rounded-xl flex items-center justify-center">
+                  <span className="text-2xl">🌅</span>
                 </div>
-
-                {/* Tasks Grid */}
-                {timeBlock.tasks.length > 0 ? (
-                  <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-                    {timeBlock.tasks.map((task) => (
-                      <TaskCard
-                        key={task.id}
-                        task={task}
-                        isCurrentBlock={isCurrentBlock}
-                      />
-                    ))}
-                  </div>
-                ) : (
-                  <div className="card p-8 text-center">
-                    <div className="text-4xl mb-4 opacity-50">{timeBlock.icon}</div>
-                    <p style={{ color: 'var(--text-secondary)' }}>
-                      No tasks scheduled for {timeBlock.name.toLowerCase()}
-                    </p>
-                  </div>
-                )}
+                <div>
+                  <h2 className="text-2xl font-bold text-slate-900">Morning Focus</h2>
+                  <p className="text-slate-600">9:00 AM - 12:00 PM • {getTasksByTimeBlock('morning').length} tasks</p>
+                </div>
               </div>
-            )
-          })}
-        </div>
-      )}
+              <div className="text-sm text-slate-500">Current</div>
+            </div>
+            <div className="grid gap-6 md:grid-cols-2">
+              {getTasksByTimeBlock('morning').map(task => renderTaskCard(task))}
+            </div>
+          </div>
 
-      {/* List View */}
-      {viewMode === 'list' && (
-        <div className="space-y-4">
-          {tasks.map((task) => (
-            <TaskCard
-              key={task.id}
-              task={task}
-              isCurrentBlock={task.time_block === currentTimeBlock}
-            />
-          ))}
-        </div>
-      )}
+          {/* Afternoon Deep Work */}
+          <div className="bg-white/60 backdrop-blur-sm rounded-2xl border border-white/50 p-8">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 bg-gradient-to-r from-blue-400 to-cyan-400 rounded-xl flex items-center justify-center">
+                  <span className="text-2xl">☀️</span>
+                </div>
+                <div>
+                  <h2 className="text-2xl font-bold text-slate-900">Afternoon Deep Work</h2>
+                  <p className="text-slate-600">1:00 PM - 5:00 PM • {getTasksByTimeBlock('afternoon').length} tasks</p>
+                </div>
+              </div>
+            </div>
+            <div className="grid gap-6 md:grid-cols-2">
+              {getTasksByTimeBlock('afternoon').map(task => renderTaskCard(task))}
+            </div>
+          </div>
 
-      {/* Kanban View Placeholder */}
-      {viewMode === 'kanban' && (
-        <div className="card p-8 text-center">
-          <div className="text-6xl mb-4 opacity-50">🚧</div>
-          <h3 className="text-xl font-semibold mb-2">Kanban View</h3>
-          <p style={{ color: 'var(--text-secondary)' }}>
-            Coming soon! This view will show tasks organized by status columns.
-          </p>
+          {/* Evening Review */}
+          <div className="bg-white/60 backdrop-blur-sm rounded-2xl border border-white/50 p-8">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 bg-gradient-to-r from-indigo-400 to-purple-400 rounded-xl flex items-center justify-center">
+                  <span className="text-2xl">🌙</span>
+                </div>
+                <div>
+                  <h2 className="text-2xl font-bold text-slate-900">Evening Review</h2>
+                  <p className="text-slate-600">6:00 PM - 8:00 PM • {getTasksByTimeBlock('evening').length} tasks</p>
+                </div>
+              </div>
+            </div>
+            {getTasksByTimeBlock('evening').length === 0 ? (
+              <div className="text-center py-12 text-slate-500">
+                <span className="text-4xl mb-4 block">🌙</span>
+                <p className="text-lg font-medium">No tasks scheduled for evening review</p>
+                <p className="text-sm mt-2">Perfect time for reflection and planning tomorrow</p>
+              </div>
+            ) : (
+              <div className="grid gap-6 md:grid-cols-2">
+                {getTasksByTimeBlock('evening').map(task => renderTaskCard(task))}
+              </div>
+            )}
+          </div>
         </div>
-      )}
+
+      </div>
     </div>
   )
 }
