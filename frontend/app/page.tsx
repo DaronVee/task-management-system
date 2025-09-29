@@ -1,9 +1,12 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { Task, TaskStats, ViewMode, TimeBlock } from '../types/task'
 import { TaskCard } from '../components/TaskCard'
 import { DashboardStats } from '../components/DashboardStats'
+import { DashboardHeader } from '../components/DashboardHeader'
+import { AIRecommendationPanel } from '../components/AIRecommendationPanel'
+import { TimeBlockSection } from '../components/TimeBlockSection'
 
 // Mock data with proper typing
 const mockTasks: Task[] = [
@@ -103,47 +106,132 @@ export default function TaskDashboard() {
   const [viewMode, setViewMode] = useState<ViewMode>('swim')
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0])
   const [focusMode, setFocusMode] = useState(false)
+  const [showKeyboardShortcuts, setShowKeyboardShortcuts] = useState(false)
 
-  // Calculate stats
-  const stats: TaskStats = {
-    totalTasks: tasks.length,
-    completedTasks: tasks.filter(task => task.status === 'completed').length,
-    inProgressTasks: tasks.filter(task => task.status === 'in_progress').length,
-    estimatedHours: Math.round(tasks.reduce((sum, task) => sum + task.estimated_minutes, 0) / 60),
-    completionPercentage: Math.round((tasks.filter(task => task.status === 'completed').length / tasks.length) * 100)
-  }
+  // Calculate stats with memoization for performance
+  const stats: TaskStats = useMemo(() => {
+    const completedTasks = tasks.filter(task => task.status === 'completed').length
+    const inProgressTasks = tasks.filter(task => task.status === 'in_progress').length
+    const totalMinutes = tasks.reduce((sum, task) => sum + task.estimated_minutes, 0)
 
-  // Get current time block
-  const getCurrentTimeBlock = (): string => {
+    return {
+      totalTasks: tasks.length,
+      completedTasks,
+      inProgressTasks,
+      estimatedHours: Math.round(totalMinutes / 60),
+      completionPercentage: tasks.length > 0 ? Math.round((completedTasks / tasks.length) * 100) : 0
+    }
+  }, [tasks])
+
+  // Get current time block (memoized)
+  const getCurrentTimeBlock = useCallback((): string => {
     const hour = new Date().getHours()
     if (hour < 12) return 'Morning Focus'
     if (hour < 17) return 'Afternoon Deep Work'
     return 'Evening Review'
-  }
+  }, [])
 
-  // Get tasks by time block
-  const getTasksByTimeBlock = (timeBlock: TimeBlock): Task[] => {
+  // Get current time block enum (memoized)
+  const getCurrentTimeBlockEnum = useCallback((): TimeBlock => {
+    const hour = new Date().getHours()
+    if (hour < 12) return 'morning'
+    if (hour < 17) return 'afternoon'
+    return 'evening'
+  }, [])
+
+  // Get tasks by time block (memoized)
+  const getTasksByTimeBlock = useCallback((timeBlock: TimeBlock): Task[] => {
     return tasks.filter(task => task.time_block === timeBlock)
-  }
+  }, [tasks])
 
-  // Get current recommendation
-  const currentRecommendation = tasks.find(task =>
-    task.status === 'not_started' && task.priority === 'P1'
+  // Memoize tasks by time block for better performance
+  const tasksByTimeBlock = useMemo(() => ({
+    morning: tasks.filter(task => task.time_block === 'morning'),
+    afternoon: tasks.filter(task => task.time_block === 'afternoon'),
+    evening: tasks.filter(task => task.time_block === 'evening')
+  }), [tasks])
+
+  // Get current recommendation (memoized)
+  const currentRecommendation = useMemo(() =>
+    tasks.find(task => task.status === 'not_started' && task.priority === 'P1'),
+    [tasks]
   )
 
-  const handleStartWorking = (taskId: string) => {
+  const handleStartWorking = useCallback((taskId: string) => {
     console.log('Starting work on task:', taskId)
     // TODO: Implement task start logic
-  }
+  }, [])
 
-  const handleViewModeChange = (mode: ViewMode) => {
+  const handleViewModeChange = useCallback((mode: ViewMode) => {
     setViewMode(mode)
-  }
+  }, [])
+
+  const handleRefresh = useCallback(() => {
+    console.log('Refreshing dashboard...')
+    // TODO: Implement refresh logic
+  }, [])
+
+  const handleDateChange = useCallback((date: string) => {
+    setSelectedDate(date)
+  }, [])
+
+  const handleFocusModeToggle = useCallback(() => {
+    setFocusMode(!focusMode)
+  }, [focusMode])
+
+  // Keyboard navigation and shortcuts
+  const handleKeyDown = useCallback((event: KeyboardEvent) => {
+    // Check for modifier keys (Ctrl/Cmd)
+    const isModified = event.ctrlKey || event.metaKey
+
+    // Handle keyboard shortcuts
+    if (isModified) {
+      switch (event.key.toLowerCase()) {
+        case 'r':
+          event.preventDefault()
+          handleRefresh()
+          break
+        case 'f':
+          event.preventDefault()
+          handleFocusModeToggle()
+          break
+        case '1':
+          event.preventDefault()
+          setViewMode('swim')
+          break
+        case '2':
+          event.preventDefault()
+          setViewMode('list')
+          break
+        case '3':
+          event.preventDefault()
+          setViewMode('kanban')
+          break
+        case '?':
+        case '/':
+          event.preventDefault()
+          setShowKeyboardShortcuts(!showKeyboardShortcuts)
+          break
+      }
+    }
+
+    // Handle escape key
+    if (event.key === 'Escape') {
+      setShowKeyboardShortcuts(false)
+    }
+  }, [showKeyboardShortcuts, focusMode, handleRefresh, handleFocusModeToggle])
+
+  // Add keyboard event listeners
+  useEffect(() => {
+    document.addEventListener('keydown', handleKeyDown)
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [handleKeyDown])
 
   return (
     <div style={{
-      minHeight: '100vh',
-      background: 'linear-gradient(135deg, var(--neutral-50) 0%, var(--brand-primary-50) 30%, var(--neutral-100) 100%)'
+      minHeight: '100vh'
     }}>
       <div style={{
         maxWidth: '90rem',
@@ -152,323 +240,150 @@ export default function TaskDashboard() {
       }}>
 
         {/* Dashboard Header */}
-        <div className="card card-elevated" style={{ marginBottom: 'var(--space-8)', padding: 'var(--space-8)' }}>
-          <div className="flex items-start justify-between" style={{ marginBottom: 'var(--space-8)' }}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
-              <div className="flex items-center gap-4">
-                <h1 style={{
-                  fontSize: 'var(--text-4xl)',
-                  fontWeight: 'var(--font-weight-bold)',
-                  background: 'var(--gradient-brand)',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  backgroundClip: 'text'
-                }}>
-                  Today's Mission
-                </h1>
-                {focusMode && (
-                  <div className="flex items-center gap-2" style={{
-                    padding: 'var(--space-2) var(--space-4)',
-                    background: 'linear-gradient(135deg, var(--brand-primary-100), var(--brand-primary-200))',
-                    color: 'var(--brand-primary-700)',
-                    borderRadius: 'var(--radius-full)',
-                    border: '1px solid var(--brand-primary-300)',
-                    fontSize: 'var(--text-sm)',
-                    fontWeight: 'var(--font-weight-semibold)'
-                  }}>
-                    <div style={{
-                      width: 'var(--space-2)',
-                      height: 'var(--space-2)',
-                      borderRadius: '50%',
-                      background: 'var(--brand-primary-500)',
-                      animation: 'priority-pulse 2s ease-in-out infinite'
-                    }} />
-                    Focus Mode Active
-                  </div>
-                )}
-              </div>
-              <p style={{
-                fontSize: 'var(--text-xl)',
-                color: 'var(--text-secondary)',
-                lineHeight: 'var(--line-height-relaxed)'
-              }}>
-                <span style={{ fontWeight: 'var(--font-weight-semibold)', color: 'var(--text-primary)' }}>
-                  {stats.completedTasks}
-                </span> of{' '}
-                <span style={{ fontWeight: 'var(--font-weight-semibold)', color: 'var(--text-primary)' }}>
-                  {stats.totalTasks}
-                </span> tasks completed •{' '}
-                <span style={{ fontWeight: 'var(--font-weight-semibold)', color: 'var(--success-600)' }}>
-                  {stats.completionPercentage}%
-                </span> complete
-              </p>
-            </div>
-
-            <div className="flex items-center gap-4">
-              {/* View Mode Switcher */}
-              <div style={{
-                display: 'flex',
-                background: 'var(--background-tertiary)',
-                borderRadius: 'var(--radius-xl)',
-                padding: 'var(--space-1)',
-                border: '1px solid var(--border-primary)'
-              }}>
-                {(['swim', 'list', 'kanban'] as ViewMode[]).map((mode) => (
-                  <button
-                    key={mode}
-                    onClick={() => handleViewModeChange(mode)}
-                    className={`btn btn-sm ${viewMode === mode ? 'btn-primary' : 'btn-ghost'}`}
-                    style={{
-                      textTransform: 'capitalize',
-                      minWidth: 'auto'
-                    }}
-                  >
-                    {mode}
-                  </button>
-                ))}
-              </div>
-
-              {/* Controls */}
-              <div className="flex items-center gap-3">
-                <input
-                  type="date"
-                  value={selectedDate}
-                  onChange={(e) => setSelectedDate(e.target.value)}
-                  className="input"
-                  style={{ width: 'auto' }}
-                />
-                <button
-                  onClick={() => setFocusMode(!focusMode)}
-                  className={`btn btn-sm ${focusMode ? 'btn-primary' : 'btn-secondary'}`}
-                >
-                  Focus Mode
-                </button>
-                <button className="btn btn-secondary btn-sm">
-                  Refresh
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Stats Grid */}
-          <DashboardStats stats={stats} />
-        </div>
+        <DashboardHeader
+          stats={stats}
+          viewMode={viewMode}
+          selectedDate={selectedDate}
+          focusMode={focusMode}
+          onViewModeChange={handleViewModeChange}
+          onDateChange={handleDateChange}
+          onFocusModeToggle={handleFocusModeToggle}
+          onRefresh={handleRefresh}
+        />
 
         {/* AI Recommendation Panel */}
         {currentRecommendation && (
-          <div style={{
-            background: 'linear-gradient(135deg, var(--brand-primary-50) 0%, var(--neutral-0) 100%)',
-            border: '1px solid var(--brand-primary-200)',
-            borderRadius: 'var(--radius-2xl)',
-            padding: 'var(--space-8)',
-            marginBottom: 'var(--space-8)',
-            boxShadow: 'var(--shadow-brand)'
-          }}>
-            <div className="flex items-center gap-4" style={{ marginBottom: 'var(--space-6)' }}>
-              <div style={{
-                width: 'var(--space-12)',
-                height: 'var(--space-12)',
-                background: 'var(--gradient-brand)',
-                borderRadius: 'var(--radius-xl)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                boxShadow: 'var(--shadow-lg)'
-              }}>
-                <span style={{ fontSize: 'var(--text-2xl)' }}>🤖</span>
-              </div>
-              <div>
-                <h2 style={{
-                  fontSize: 'var(--text-2xl)',
-                  fontWeight: 'var(--font-weight-bold)',
-                  color: 'var(--text-primary)',
-                  marginBottom: 'var(--space-1)'
-                }}>
-                  AI Recommendation
-                </h2>
-                <p style={{ color: 'var(--text-secondary)' }}>
-                  Based on your current time block:{' '}
-                  <span style={{ fontWeight: 'var(--font-weight-semibold)', color: 'var(--text-primary)' }}>
-                    {getCurrentTimeBlock()}
-                  </span>
-                </p>
-              </div>
-            </div>
-            <TaskCard
-              task={currentRecommendation}
-              isSuggested={true}
-              onStartWorking={handleStartWorking}
-            />
-          </div>
+          <AIRecommendationPanel
+            recommendation={currentRecommendation}
+            currentTimeBlock={getCurrentTimeBlock()}
+            onStartWorking={handleStartWorking}
+          />
         )}
 
         {/* Time Blocks */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-8)' }}>
-          {/* Morning Focus */}
-          <div className="card" style={{ padding: 'var(--space-8)' }}>
-            <div className="flex items-center justify-between" style={{ marginBottom: 'var(--space-6)' }}>
-              <div className="flex items-center gap-4">
-                <div style={{
-                  width: 'var(--space-10)',
-                  height: 'var(--space-10)',
-                  background: 'linear-gradient(135deg, var(--warning-400), var(--warning-500))',
-                  borderRadius: 'var(--radius-xl)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}>
-                  <span style={{ fontSize: 'var(--text-2xl)' }}>🌅</span>
-                </div>
-                <div>
-                  <h2 style={{
-                    fontSize: 'var(--text-2xl)',
-                    fontWeight: 'var(--font-weight-bold)',
-                    color: 'var(--text-primary)'
-                  }}>
-                    Morning Focus
-                  </h2>
-                  <p style={{ color: 'var(--text-secondary)' }}>
-                    9:00 AM - 12:00 PM • {getTasksByTimeBlock('morning').length} tasks
-                  </p>
-                </div>
-              </div>
-              <div style={{
-                fontSize: 'var(--text-sm)',
-                color: 'var(--text-tertiary)',
-                fontWeight: 'var(--font-weight-medium)'
-              }}>
-                Current
-              </div>
-            </div>
-            <div style={{
-              display: 'grid',
-              gap: 'var(--space-6)',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))'
-            }}>
-              {getTasksByTimeBlock('morning').map(task => (
-                <TaskCard
-                  key={task.id}
-                  task={task}
-                  onStartWorking={handleStartWorking}
-                />
-              ))}
-            </div>
-          </div>
+          <TimeBlockSection
+            title="Morning Focus"
+            icon="🌅"
+            timeRange="9:00 AM - 12:00 PM"
+            timeBlock="morning"
+            tasks={tasksByTimeBlock.morning}
+            isCurrent={getCurrentTimeBlockEnum() === 'morning'}
+            onStartWorking={handleStartWorking}
+          />
 
-          {/* Afternoon Deep Work */}
-          <div className="card" style={{ padding: 'var(--space-8)' }}>
-            <div className="flex items-center justify-between" style={{ marginBottom: 'var(--space-6)' }}>
-              <div className="flex items-center gap-4">
-                <div style={{
-                  width: 'var(--space-10)',
-                  height: 'var(--space-10)',
-                  background: 'linear-gradient(135deg, var(--brand-primary-400), var(--brand-primary-500))',
-                  borderRadius: 'var(--radius-xl)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}>
-                  <span style={{ fontSize: 'var(--text-2xl)' }}>☀️</span>
-                </div>
-                <div>
-                  <h2 style={{
-                    fontSize: 'var(--text-2xl)',
-                    fontWeight: 'var(--font-weight-bold)',
-                    color: 'var(--text-primary)'
-                  }}>
-                    Afternoon Deep Work
-                  </h2>
-                  <p style={{ color: 'var(--text-secondary)' }}>
-                    1:00 PM - 5:00 PM • {getTasksByTimeBlock('afternoon').length} tasks
-                  </p>
-                </div>
-              </div>
-            </div>
-            <div style={{
-              display: 'grid',
-              gap: 'var(--space-6)',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))'
-            }}>
-              {getTasksByTimeBlock('afternoon').map(task => (
-                <TaskCard
-                  key={task.id}
-                  task={task}
-                  onStartWorking={handleStartWorking}
-                />
-              ))}
-            </div>
-          </div>
+          <TimeBlockSection
+            title="Afternoon Deep Work"
+            icon="☀️"
+            timeRange="1:00 PM - 5:00 PM"
+            timeBlock="afternoon"
+            tasks={tasksByTimeBlock.afternoon}
+            isCurrent={getCurrentTimeBlockEnum() === 'afternoon'}
+            onStartWorking={handleStartWorking}
+          />
 
-          {/* Evening Review */}
-          <div className="card" style={{ padding: 'var(--space-8)' }}>
-            <div className="flex items-center justify-between" style={{ marginBottom: 'var(--space-6)' }}>
-              <div className="flex items-center gap-4">
-                <div style={{
-                  width: 'var(--space-10)',
-                  height: 'var(--space-10)',
-                  background: 'linear-gradient(135deg, var(--neutral-600), var(--neutral-700))',
-                  borderRadius: 'var(--radius-xl)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}>
-                  <span style={{ fontSize: 'var(--text-2xl)' }}>🌙</span>
-                </div>
-                <div>
-                  <h2 style={{
-                    fontSize: 'var(--text-2xl)',
-                    fontWeight: 'var(--font-weight-bold)',
-                    color: 'var(--text-primary)'
-                  }}>
-                    Evening Review
-                  </h2>
-                  <p style={{ color: 'var(--text-secondary)' }}>
-                    6:00 PM - 8:00 PM • {getTasksByTimeBlock('evening').length} tasks
-                  </p>
-                </div>
-              </div>
-            </div>
-            {getTasksByTimeBlock('evening').length === 0 ? (
-              <div style={{
-                textAlign: 'center',
-                padding: 'var(--space-12) 0',
-                color: 'var(--text-tertiary)'
-              }}>
-                <span style={{
-                  fontSize: 'var(--text-4xl)',
-                  marginBottom: 'var(--space-4)',
-                  display: 'block'
-                }}>
-                  🌙
-                </span>
-                <p style={{
-                  fontSize: 'var(--text-lg)',
-                  fontWeight: 'var(--font-weight-medium)',
-                  marginBottom: 'var(--space-2)'
-                }}>
-                  No tasks scheduled for evening review
-                </p>
-                <p style={{ fontSize: 'var(--text-sm)' }}>
-                  Perfect time for reflection and planning tomorrow
-                </p>
-              </div>
-            ) : (
-              <div style={{
-                display: 'grid',
-                gap: 'var(--space-6)',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))'
-              }}>
-                {getTasksByTimeBlock('evening').map(task => (
-                  <TaskCard
-                    key={task.id}
-                    task={task}
-                    onStartWorking={handleStartWorking}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
+          <TimeBlockSection
+            title="Evening Review"
+            icon="🌙"
+            timeRange="6:00 PM - 8:00 PM"
+            timeBlock="evening"
+            tasks={tasksByTimeBlock.evening}
+            isCurrent={getCurrentTimeBlockEnum() === 'evening'}
+            onStartWorking={handleStartWorking}
+          />
         </div>
+
+        {/* Keyboard Shortcuts Help Modal */}
+        {showKeyboardShortcuts && (
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center animate-modal-backdrop"
+            style={{
+              background: 'var(--background-overlay)'
+            }}
+            onClick={() => setShowKeyboardShortcuts(false)}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="shortcuts-title"
+          >
+            <div
+              className="card animate-modal-slide"
+              style={{
+                maxWidth: '32rem',
+                margin: 'var(--space-4)',
+                padding: 'var(--space-8)'
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between" style={{ marginBottom: 'var(--space-6)' }}>
+                <h2
+                  id="shortcuts-title"
+                  style={{
+                    fontSize: 'var(--text-2xl)',
+                    fontWeight: 'var(--font-weight-bold)',
+                    color: 'var(--text-primary)'
+                  }}
+                >
+                  Keyboard Shortcuts
+                </h2>
+                <button
+                  onClick={() => setShowKeyboardShortcuts(false)}
+                  className="btn btn-ghost"
+                  style={{
+                    minWidth: 'auto',
+                    padding: 'var(--space-2)'
+                  }}
+                  aria-label="Close shortcuts help"
+                >
+                  ✕
+                </button>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+                <div className="flex justify-between items-center">
+                  <span style={{ color: 'var(--text-secondary)' }}>Refresh Dashboard</span>
+                  <kbd className="kbd">⌘ + R</kbd>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span style={{ color: 'var(--text-secondary)' }}>Toggle Focus Mode</span>
+                  <kbd className="kbd">⌘ + F</kbd>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span style={{ color: 'var(--text-secondary)' }}>Switch to Swim View</span>
+                  <kbd className="kbd">⌘ + 1</kbd>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span style={{ color: 'var(--text-secondary)' }}>Switch to List View</span>
+                  <kbd className="kbd">⌘ + 2</kbd>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span style={{ color: 'var(--text-secondary)' }}>Switch to Kanban View</span>
+                  <kbd className="kbd">⌘ + 3</kbd>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span style={{ color: 'var(--text-secondary)' }}>Show/Hide Shortcuts</span>
+                  <kbd className="kbd">⌘ + ?</kbd>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span style={{ color: 'var(--text-secondary)' }}>Close Modal</span>
+                  <kbd className="kbd">Esc</kbd>
+                </div>
+              </div>
+
+              <div
+                style={{
+                  marginTop: 'var(--space-6)',
+                  padding: 'var(--space-4)',
+                  background: 'var(--background-tertiary)',
+                  borderRadius: 'var(--radius-lg)',
+                  fontSize: 'var(--text-sm)',
+                  color: 'var(--text-secondary)'
+                }}
+              >
+                💡 Tip: Use Tab to navigate between interactive elements and Enter/Space to activate them.
+              </div>
+            </div>
+          </div>
+        )}
 
       </div>
     </div>

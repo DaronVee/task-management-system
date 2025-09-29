@@ -29,7 +29,7 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
       </head>
       <body className="antialiased">
-        <div className="min-h-screen" style={{ background: 'var(--background-secondary)' }}>
+        <div className="min-h-screen app-background">
           {/* Modern Gradient Header */}
           <header className="relative overflow-hidden" style={{ height: '200px' }}>
             {/* Gradient Background */}
