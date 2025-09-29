@@ -1,0 +1,209 @@
+{
+  "report_preferences": {
+    "scheduling": {
+      "daily_report": {
+        "enabled": true,
+        "time": "21:00",
+        "timezone": "local",
+        "trigger_condition": "end_of_workday"
+      },
+      "weekly_report": {
+        "enabled": true,
+        "day": "sunday",
+        "time": "20:00",
+        "timezone": "local",
+        "trigger_condition": "end_of_week"
+      },
+      "monthly_report": {
+        "enabled": true,
+        "day": "last",
+        "time": "21:00",
+        "timezone": "local",
+        "trigger_condition": "end_of_month"
+      },
+      "on_demand": {
+        "enabled": true,
+        "response_time": "immediate"
+      }
+    },
+    "content_preferences": {
+      "tone": "encouraging",
+      "detail_level": "comprehensive",
+      "focus_areas": [
+        "achievements",
+        "patterns",
+        "recommendations",
+        "next_steps"
+      ],
+      "metrics_emphasis": "balanced",
+      "include_visual_elements": true
+    }
+  },
+  "daily_report_settings": {
+    "sections": {
+      "wins": {
+        "enabled": true,
+        "highlight_top_achievement": true,
+        "show_completion_rate": true,
+        "show_time_insights": true
+      },
+      "performance_snapshot": {
+        "enabled": true,
+        "show_focus_time": true,
+        "show_energy_alignment": true,
+        "show_estimation_accuracy": true
+      },
+      "key_insight": {
+        "enabled": true,
+        "focus_on": "productivity_patterns",
+        "max_insights": 1
+      },
+      "tomorrow_setup": {
+        "enabled": true,
+        "show_priority_focus": true,
+        "show_energy_plan": true,
+        "show_quick_prep": true
+      }
+    },
+    "thresholds": {
+      "completion_rate_good": 80,
+      "completion_rate_warning": 60,
+      "focus_time_target": 4,
+      "energy_alignment_target": 75
+    }
+  },
+  "weekly_report_settings": {
+    "sections": {
+      "week_at_glance": {
+        "enabled": true,
+        "show_task_completion": true,
+        "show_work_hours": true,
+        "highlight_top_achievement": true
+      },
+      "objective_progress": {
+        "enabled": true,
+        "show_all_objectives": true,
+        "show_progress_percentage": true,
+        "highlight_significant_progress": true
+      },
+      "performance_patterns": {
+        "enabled": true,
+        "max_positive_patterns": 3,
+        "max_improvement_areas": 2,
+        "focus_on_actionable": true
+      },
+      "deep_insights": {
+        "enabled": true,
+        "analyze_time_management": true,
+        "analyze_task_patterns": true,
+        "analyze_energy_efficiency": true
+      },
+      "next_week_focus": {
+        "enabled": true,
+        "max_process_improvements": 3,
+        "include_scheduling_optimizations": true,
+        "preview_major_deliverables": true
+      }
+    }
+  },
+  "monthly_report_settings": {
+    "sections": {
+      "executive_summary": {
+        "enabled": true,
+        "max_sentences": 3,
+        "focus_on_key_achievements": true
+      },
+      "metrics_table": {
+        "enabled": true,
+        "compare_to_previous_month": true,
+        "highlight_significant_changes": true,
+        "metrics_to_include": [
+          "completion_rate",
+          "total_tasks",
+          "deep_work_hours",
+          "objective_progress"
+        ]
+      },
+      "major_achievements": {
+        "enabled": true,
+        "max_achievements": 5,
+        "include_impact_description": true
+      },
+      "objective_review": {
+        "enabled": true,
+        "detailed_progress_analysis": true,
+        "identify_accelerating_factors": true,
+        "flag_stalled_objectives": true
+      },
+      "productivity_evolution": {
+        "enabled": true,
+        "track_system_improvements": true,
+        "identify_growth_patterns": true,
+        "highlight_persistent_challenges": true
+      },
+      "strategic_insights": {
+        "enabled": true,
+        "analyze_time_mastery": true,
+        "analyze_energy_optimization": true,
+        "analyze_execution_excellence": true
+      },
+      "next_month_focus": {
+        "enabled": true,
+        "max_priority_objectives": 3,
+        "include_system_optimizations": true,
+        "include_capacity_planning": true
+      }
+    }
+  },
+  "formatting_preferences": {
+    "use_emojis": true,
+    "emoji_mapping": {
+      "wins": "🎯",
+      "performance": "📊",
+      "insights": "🔍",
+      "setup": "🚀",
+      "achievements": "🏆",
+      "patterns": "📈",
+      "improvements": "⚠️",
+      "focus": "🎯",
+      "metrics": "📊",
+      "evolution": "📈",
+      "strategic": "🔍"
+    },
+    "number_formatting": {
+      "percentages": "round_to_integer",
+      "hours": "decimal_1_place",
+      "task_counts": "integer"
+    },
+    "visual_elements": {
+      "use_tables": true,
+      "use_bullet_points": true,
+      "use_horizontal_rules": true,
+      "highlight_key_metrics": true
+    }
+  },
+  "delivery_preferences": {
+    "format": "markdown",
+    "save_to_file": true,
+    "file_location": "reports/",
+    "filename_pattern": "{report_type}_{date}.md",
+    "notify_when_ready": true,
+    "auto_archive_after_days": 90
+  },
+  "alert_thresholds": {
+    "completion_rate_drop": 20,
+    "estimation_accuracy_drop": 25,
+    "energy_misalignment_increase": 30,
+    "objective_progress_stall_days": 7
+  },
+  "meta": {
+    "last_updated": "2025-09-29",
+    "next_review_date": "2025-12-29",
+    "review_frequency": "quarterly",
+    "notes": [
+      "Report timing can be adjusted based on work schedule",
+      "Content sections can be enabled/disabled individually",
+      "Thresholds should be adjusted based on personal performance baselines"
+    ]
+  }
+}

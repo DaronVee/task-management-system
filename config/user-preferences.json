@@ -1,0 +1,186 @@
+{
+  "schedule_preferences": {
+    "work_hours": {
+      "blocks": [
+        {
+          "name": "Morning Deep Work",
+          "start_time": "08:00",
+          "end_time": "12:00",
+          "description": "Peak focus for strategy, YouTube content, GPT building, and high-leverage tasks"
+        },
+        {
+          "name": "Afternoon Engagement",
+          "start_time": "13:00",
+          "end_time": "16:00",
+          "description": "Community calls, Skool engagement, outreach, and collaborations"
+        },
+        {
+          "name": "Evening Mastery",
+          "start_time": "18:00",
+          "end_time": "21:00",
+          "description": "Learning, R&D, admin, planning, and personal mastery activities"
+        }
+      ],
+      "work_days": ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday"]
+    },
+    "energy_schedule": {
+      "peak_energy": {
+        "times": ["08:00-12:00"],
+        "description": "Best for complex, creative, high-focus tasks like YouTube scripts, GPT development, and strategy"
+      },
+      "medium_energy": {
+        "times": ["13:00-16:00"],
+        "description": "Best for community engagement, meetings, and collaborative tasks"
+      },
+      "second_wind": {
+        "times": ["18:00-21:00"],
+        "description": "Ideal for R&D, learning, and evening mastery work"
+      },
+      "low_energy": {
+        "times": ["16:00-18:00"],
+        "description": "Best for light tasks, resets, or recovery"
+      }
+    },
+    "time_blocks": {
+      "morning": {
+        "start": "08:00",
+        "end": "12:00",
+        "type": "deep_work",
+        "characteristics": ["high_focus", "complex_tasks", "minimal_interruptions"]
+      },
+      "afternoon": {
+        "start": "13:00",
+        "end": "16:00",
+        "type": "collaboration",
+        "characteristics": ["meetings_ok", "community_engagement", "moderate_complexity"]
+      },
+      "evening": {
+        "start": "18:00",
+        "end": "21:00",
+        "type": "mastery",
+        "characteristics": ["learning", "r&d", "planning", "light_admin"]
+      }
+    }
+  },
+  "optimization_settings": {
+    "buffer_times": {
+      "between_similar_tasks": 5,
+      "between_different_categories": 10,
+      "between_energy_transitions": 15,
+      "optional_reset_break": 30
+    },
+    "deep_work_preferences": {
+      "minimum_block_duration": 60,
+      "optimal_block_duration": 90,
+      "maximum_block_duration": 150,
+      "break_frequency": 90
+    },
+    "context_switching": {
+      "minimize_tool_changes": true,
+      "batch_similar_categories": true,
+      "protect_flow_state": true,
+      "max_category_switches_per_day": 3
+    },
+    "task_placement_rules": {
+      "p1_tasks_in_peak_energy": true,
+      "no_meetings_in_morning_deep_work": true,
+      "batch_admin_tasks": true,
+      "defer_p3_when_overloaded": true
+    }
+  },
+  "calendar_constraints": {
+    "protected_time_slots": [
+      {
+        "name": "Morning Deep Work",
+        "time": "08:00-10:30",
+        "days": ["monday", "tuesday", "wednesday", "thursday", "friday"],
+        "type": "no_meetings"
+      }
+    ],
+    "recurring_commitments": [
+      {
+        "name": "Weekly Q&A Call",
+        "time": "15:00-16:00",
+        "days": ["tuesday"],
+        "type": "fixed_meeting"
+      },
+      {
+        "name": "AI Leaders / Annual Member Calls",
+        "time": "15:00-16:00",
+        "days": ["thursday"],
+        "type": "fixed_meeting"
+      }
+    ],
+    "flexible_meeting_windows": [
+      {
+        "name": "Afternoon Collaboration",
+        "start": "14:00",
+        "end": "16:00",
+        "days": ["monday", "wednesday", "friday"]
+      }
+    ]
+  },
+  "personal_preferences": {
+    "break_preferences": {
+      "short_break_duration": 10,
+      "long_break_duration": 25,
+      "break_activities": ["boxing", "drumming", "hydration", "walk"],
+      "forced_break_after_minutes": 150
+    },
+    "focus_patterns": {
+      "best_focus_time": "08:00-11:00",
+      "creativity_peak": "10:00-12:00",
+      "energy_crash_time": "14:00-15:00",
+      "second_wind": "19:00-21:00"
+    },
+    "task_category_preferences": {
+      "gpt_building": {
+        "preferred_time": "morning",
+        "energy_requirement": "high",
+        "context_switching_cost": "high"
+      },
+      "content_video": {
+        "preferred_time": "morning",
+        "energy_requirement": "high",
+        "batch_recommended": true
+      },
+      "community": {
+        "preferred_time": "afternoon",
+        "energy_requirement": "medium",
+        "batch_recommended": true
+      },
+      "sales_marketing": {
+        "preferred_time": "morning",
+        "energy_requirement": "high",
+        "context_switching_cost": "medium"
+      },
+      "admin": {
+        "preferred_time": "evening",
+        "energy_requirement": "low",
+        "batch_recommended": true
+      },
+      "learning": {
+        "preferred_time": "evening",
+        "energy_requirement": "medium",
+        "context_switching_cost": "low"
+      }
+    },
+    "workload_limits": {
+      "max_tasks_per_day": 10,
+      "max_p1_tasks_per_day": 3,
+      "max_deep_work_hours": 4,
+      "preferred_task_duration_range": [30, 120]
+    }
+  },
+  "meta": {
+    "last_updated": "2025-09-29",
+    "next_review_date": "2025-12-29",
+    "review_frequency": "quarterly",
+    "notes": [
+      "Structured around 3 daily blocks: Deep Work, Engagement, Mastery",
+      "Afternoons reserved for community engagement and live calls instead of corporate-style standups",
+      "Breaks optimized for focus with activities like boxing and drumming that match personal style",
+      "Task categories updated to reflect real CCGG activities (GPT building, content, sales/marketing, community)"
+    ]
+  }
+}

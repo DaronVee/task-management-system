@@ -1,0 +1,97 @@
+{
+  "objectives": [
+    {
+      "id": "obj-1",
+      "title": "Build and Launch Task Management System",
+      "description": "Complete development of the sub-agent powered task management system and start using it daily",
+      "weight": 10.0,
+      "active": true,
+      "created_at": "2025-01-29T08:00:00Z"
+    },
+    {
+      "id": "obj-2",
+      "title": "Improve Daily Productivity",
+      "description": "Establish consistent daily routines and optimize time management through better task prioritization",
+      "weight": 8.0,
+      "active": true,
+      "created_at": "2025-01-29T08:00:00Z"
+    },
+    {
+      "id": "obj-3",
+      "title": "Learn and Implement AI-Powered Workflows",
+      "description": "Explore and integrate AI tools like Claude Code sub-agents into daily development and personal productivity workflows",
+      "weight": 7.0,
+      "active": true,
+      "created_at": "2025-01-29T08:00:00Z"
+    }
+  ],
+  "work_hours": {
+    "start": "09:00",
+    "end": "17:00",
+    "timezone": "America/New_York"
+  },
+  "energy_schedule": {
+    "peak": "morning",
+    "medium": "afternoon",
+    "low": "evening"
+  },
+  "default_estimates": {
+    "small": 15,
+    "medium": 30,
+    "large": 60,
+    "xlarge": 120
+  },
+  "time_blocks": {
+    "morning": {
+      "start": "09:00",
+      "end": "12:00",
+      "description": "Deep work, high energy tasks"
+    },
+    "afternoon": {
+      "start": "13:00",
+      "end": "17:00",
+      "description": "Meetings, collaboration, medium complexity tasks"
+    },
+    "evening": {
+      "start": "18:00",
+      "end": "21:00",
+      "description": "Admin, light tasks, planning"
+    }
+  },
+  "preferences": {
+    "max_daily_tasks": 8,
+    "min_break_between_tasks": 5,
+    "preferred_task_duration": 30,
+    "auto_schedule": true,
+    "batch_similar_tasks": true,
+    "prioritize_by_energy": true,
+    "default_category": "admin",
+    "kill_low_value_tasks": true,
+    "defer_threshold_days": 3
+  },
+  "notification_settings": {
+    "task_reminders": true,
+    "daily_report": true,
+    "weekly_summary": true,
+    "stuck_task_alerts": true
+  },
+  "sub_agent_settings": {
+    "task_extractor": {
+      "model": "claude-3-opus",
+      "confidence_threshold": 0.8
+    },
+    "priority_strategist": {
+      "model": "claude-3-opus",
+      "alignment_weight": 0.7,
+      "urgency_weight": 0.3
+    },
+    "task_architect": {
+      "model": "claude-3-sonnet",
+      "auto_breakdown_threshold": 60
+    },
+    "day_optimizer": {
+      "model": "claude-3-sonnet",
+      "respect_energy_levels": true
+    }
+  }
+}

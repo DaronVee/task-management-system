@@ -1,0 +1,412 @@
+/* Modern Animation System - 2025 Standards */
+
+/* Spring-based custom properties for consistent motion */
+:root {
+  /* Spring physics parameters */
+  --spring-fast: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --spring-medium: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --spring-slow: cubic-bezier(0.25, 1, 0.5, 1);
+  --spring-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+
+  /* Stagger delays for sequential animations */
+  --stagger-delay-1: 0ms;
+  --stagger-delay-2: 50ms;
+  --stagger-delay-3: 100ms;
+  --stagger-delay-4: 150ms;
+  --stagger-delay-5: 200ms;
+}
+
+/* Foundational animation classes */
+.animate-in {
+  animation: fadeInUp 0.5s var(--spring-medium) forwards;
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.animate-out {
+  animation: fadeOutDown 0.3s var(--spring-fast) forwards;
+}
+
+/* Task card animations */
+.task-card {
+  transition: all 0.2s var(--spring-medium);
+  transform: translateZ(0); /* Enable hardware acceleration */
+  will-change: transform, box-shadow;
+}
+
+.task-card:hover {
+  transform: translateY(-2px) scale(1.01);
+  box-shadow: 0 8px 25px -5px rgba(0, 0, 0, 0.1),
+              0 4px 10px -6px rgba(0, 0, 0, 0.1);
+}
+
+.task-card:active {
+  transform: translateY(0) scale(0.99);
+  transition-duration: 0.1s;
+}
+
+/* Priority badge pulse for critical tasks */
+.priority-critical {
+  animation: criticalPulse 2s infinite;
+}
+
+@keyframes criticalPulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(220, 38, 38, 0);
+  }
+}
+
+/* Progress bar smooth animations */
+.progress-bar {
+  transition: width 0.6s var(--spring-medium);
+  background: linear-gradient(90deg,
+    var(--primary-500) 0%,
+    var(--primary-600) 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.progress-bar::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.3) 50%,
+    transparent 100%);
+  animation: progressShimmer 2s infinite;
+}
+
+@keyframes progressShimmer {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
+/* Completion celebration animation */
+.completion-celebration {
+  animation: completionBounce 0.6s var(--spring-bounce);
+}
+
+@keyframes completionBounce {
+  0% {
+    transform: scale(1);
+  }
+  30% {
+    transform: scale(1.1);
+  }
+  50% {
+    transform: scale(0.95);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Status change animations */
+.status-updating {
+  position: relative;
+  overflow: hidden;
+}
+
+.status-updating::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgba(59, 130, 246, 0.1) 50%,
+    transparent 100%);
+  animation: statusUpdate 1s ease-in-out;
+}
+
+@keyframes statusUpdate {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
+/* Expansion animations for task details */
+.expand-enter {
+  overflow: hidden;
+  max-height: 0;
+  opacity: 0;
+  animation: expandIn 0.3s var(--spring-medium) forwards;
+}
+
+.expand-exit {
+  overflow: hidden;
+  animation: expandOut 0.2s var(--spring-fast) forwards;
+}
+
+@keyframes expandIn {
+  0% {
+    max-height: 0;
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  100% {
+    max-height: 1000px;
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes expandOut {
+  0% {
+    max-height: 1000px;
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    max-height: 0;
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+}
+
+/* Staggered list animations */
+.stagger-item {
+  animation: staggerIn 0.4s var(--spring-medium) backwards;
+}
+
+.stagger-item:nth-child(1) { animation-delay: var(--stagger-delay-1); }
+.stagger-item:nth-child(2) { animation-delay: var(--stagger-delay-2); }
+.stagger-item:nth-child(3) { animation-delay: var(--stagger-delay-3); }
+.stagger-item:nth-child(4) { animation-delay: var(--stagger-delay-4); }
+.stagger-item:nth-child(5) { animation-delay: var(--stagger-delay-5); }
+
+/* Continue stagger pattern for more items */
+.stagger-item:nth-child(n+6) {
+  animation-delay: calc(var(--stagger-delay-5) + (var(--index, 0) * 50ms));
+}
+
+@keyframes staggerIn {
+  0% {
+    opacity: 0;
+    transform: translateY(30px) scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Loading skeleton animations */
+.skeleton {
+  background: linear-gradient(90deg,
+    var(--gray-200) 25%,
+    var(--gray-100) 50%,
+    var(--gray-200) 75%);
+  background-size: 200% 100%;
+  animation: skeleton 1.5s infinite;
+}
+
+@keyframes skeleton {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* Focus ring animations */
+.focus-ring {
+  position: relative;
+}
+
+.focus-ring:focus-visible::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border: 2px solid var(--primary-500);
+  border-radius: inherit;
+  animation: focusRing 0.2s var(--spring-fast);
+}
+
+@keyframes focusRing {
+  0% {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Micro-interactions for buttons */
+.button-interactive {
+  transition: all 0.15s var(--spring-fast);
+  transform: translateZ(0);
+}
+
+.button-interactive:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.button-interactive:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  transition-duration: 0.05s;
+}
+
+/* Success state animations */
+.success-flash {
+  animation: successFlash 0.5s var(--spring-medium);
+}
+
+@keyframes successFlash {
+  0% {
+    background-color: transparent;
+  }
+  50% {
+    background-color: rgba(34, 197, 94, 0.1);
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+
+/* Error state animations */
+.error-shake {
+  animation: errorShake 0.5s var(--spring-fast);
+}
+
+@keyframes errorShake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-5px);
+  }
+  75% {
+    transform: translateX(5px);
+  }
+}
+
+/* Command palette animations */
+.modal-backdrop {
+  animation: backdropFadeIn 0.2s ease-out;
+}
+
+.modal-content {
+  animation: modalSlideIn 0.3s var(--spring-medium);
+}
+
+@keyframes backdropFadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes modalSlideIn {
+  0% {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Drag and drop animations */
+.drag-preview {
+  animation: dragLift 0.2s var(--spring-medium);
+  transform: rotate(3deg) scale(1.05);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.drop-zone-active {
+  animation: dropZonePulse 1s infinite;
+}
+
+@keyframes dragLift {
+  0% {
+    transform: rotate(0deg) scale(1);
+    box-shadow: var(--shadow-sm);
+  }
+  100% {
+    transform: rotate(3deg) scale(1.05);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  }
+}
+
+@keyframes dropZonePulse {
+  0%, 100% {
+    border-color: var(--primary-300);
+    background-color: var(--primary-50);
+  }
+  50% {
+    border-color: var(--primary-500);
+    background-color: var(--primary-100);
+  }
+}
+
+/* Utility classes for animation control */
+.pause-animations {
+  animation-play-state: paused !important;
+}
+
+.resume-animations {
+  animation-play-state: running !important;
+}
+
+.no-animations,
+.no-animations * {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+}
+
+/* Performance optimizations */
+.will-animate {
+  will-change: transform, opacity, box-shadow;
+}
+
+.animation-complete {
+  will-change: auto;
+}
+
+/* Dark mode adjustments */
+@media (prefers-color-scheme: dark) {
+  .skeleton {
+    background: linear-gradient(90deg,
+      var(--gray-700) 25%,
+      var(--gray-600) 50%,
+      var(--gray-700) 75%);
+  }
+}
+
+/* High contrast mode adjustments */
+@media (prefers-contrast: high) {
+  .task-card:hover {
+    box-shadow: 0 0 0 3px var(--primary-500);
+    transform: none;
+  }
+
+  .progress-bar::after {
+    display: none;
+  }
+}

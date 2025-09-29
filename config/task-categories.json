@@ -1,0 +1,204 @@
+{
+  "task_categories": {
+    "default_categories": [
+      {
+        "id": "development",
+        "name": "Development",
+        "description": "Code, technical implementation, system work",
+        "color": "#3b82f6",
+        "energy_requirement": "high",
+        "optimal_time_block": "morning",
+        "context_switching_cost": "high",
+        "typical_duration_range": [30, 120]
+      },
+      {
+        "id": "design",
+        "name": "Design",
+        "description": "UI/UX, graphics, creative work",
+        "color": "#8b5cf6",
+        "energy_requirement": "high",
+        "optimal_time_block": "morning",
+        "context_switching_cost": "medium",
+        "typical_duration_range": [45, 90]
+      },
+      {
+        "id": "admin",
+        "name": "Administrative",
+        "description": "Email, paperwork, routine maintenance",
+        "color": "#6b7280",
+        "energy_requirement": "low",
+        "optimal_time_block": "evening",
+        "context_switching_cost": "low",
+        "typical_duration_range": [15, 30]
+      },
+      {
+        "id": "learning",
+        "name": "Learning",
+        "description": "Research, study, skill development",
+        "color": "#10b981",
+        "energy_requirement": "medium",
+        "optimal_time_block": "afternoon",
+        "context_switching_cost": "medium",
+        "typical_duration_range": [30, 60]
+      },
+      {
+        "id": "personal",
+        "name": "Personal",
+        "description": "Non-work items, self-care, life management",
+        "color": "#f59e0b",
+        "energy_requirement": "varies",
+        "optimal_time_block": "evening",
+        "context_switching_cost": "low",
+        "typical_duration_range": [15, 60]
+      },
+      {
+        "id": "meeting",
+        "name": "Meetings",
+        "description": "Scheduled calls, discussions, presentations",
+        "color": "#ef4444",
+        "energy_requirement": "medium",
+        "optimal_time_block": "afternoon",
+        "context_switching_cost": "high",
+        "typical_duration_range": [30, 60]
+      },
+      {
+        "id": "planning",
+        "name": "Planning",
+        "description": "Strategy, roadmapping, project planning",
+        "color": "#06b6d4",
+        "energy_requirement": "medium",
+        "optimal_time_block": "morning",
+        "context_switching_cost": "medium",
+        "typical_duration_range": [30, 90]
+      }
+    ],
+    "custom_categories": [
+      {
+        "id": "writing",
+        "name": "Writing",
+        "description": "Content creation, documentation, blog posts",
+        "color": "#84cc16",
+        "energy_requirement": "medium",
+        "optimal_time_block": "morning",
+        "context_switching_cost": "medium",
+        "typical_duration_range": [45, 90]
+      },
+      {
+        "id": "content_video",
+        "name": "Content (Video)",
+        "description": "Filming, editing, and publishing YouTube videos, shorts, and repurposed video content",
+        "color": "#2563eb",
+        "energy_requirement": "high",
+        "optimal_time_block": "morning",
+        "context_switching_cost": "high",
+        "typical_duration_range": [60, 180]
+      },
+      {
+        "id": "community",
+        "name": "Community Engagement",
+        "description": "Member interactions, Skool moderation, live Q&A support, personalized feedback",
+        "color": "#ec4899",
+        "energy_requirement": "medium",
+        "optimal_time_block": "afternoon",
+        "context_switching_cost": "medium",
+        "typical_duration_range": [30, 90]
+      },
+      {
+        "id": "sales_marketing",
+        "name": "Sales & Marketing Execution",
+        "description": "Campaign launches, referral programs, lead magnets, upgrade flows",
+        "color": "#f43f5e",
+        "energy_requirement": "medium",
+        "optimal_time_block": "morning",
+        "context_switching_cost": "high",
+        "typical_duration_range": [45, 120]
+      }
+    ]
+  },
+  "time_blocks": {
+    "morning": {
+      "id": "morning",
+      "name": "Morning Deep Work",
+      "time_range": "09:00-12:00",
+      "energy_level": "peak",
+      "characteristics": ["high_focus", "complex_tasks", "minimal_interruptions"],
+      "best_for_categories": ["development", "design", "planning", "writing", "content_video", "sales_marketing"],
+      "avoid_categories": ["admin", "meetings"]
+    },
+    "afternoon": {
+      "id": "afternoon",
+      "name": "Afternoon Collaboration",
+      "time_range": "13:00-17:00",
+      "energy_level": "medium",
+      "characteristics": ["meetings_ok", "moderate_complexity", "team_work"],
+      "best_for_categories": ["meeting", "learning", "admin", "community"],
+      "avoid_categories": []
+    },
+    "evening": {
+      "id": "evening",
+      "name": "Evening Planning",
+      "time_range": "18:00-21:00",
+      "energy_level": "low",
+      "characteristics": ["light_tasks", "planning", "learning"],
+      "best_for_categories": ["admin", "personal", "learning"],
+      "avoid_categories": ["development", "design", "content_video"]
+    }
+  },
+  "estimation_guidelines": {
+    "size_categories": {
+      "small": {
+        "name": "Small Task",
+        "minutes": 15,
+        "description": "Quick admin, single email, simple update",
+        "examples": ["Send status update", "Review short document", "Quick code fix"]
+      },
+      "medium": {
+        "name": "Medium Task",
+        "minutes": 30,
+        "description": "Standard task, focused work session",
+        "examples": ["Write feature specs", "Complete code review", "Research competitor"]
+      },
+      "large": {
+        "name": "Large Task",
+        "minutes": 60,
+        "description": "Complex task, deep work required",
+        "examples": ["Implement new feature", "Design system architecture", "Write comprehensive report"]
+      },
+      "xlarge": {
+        "name": "Extra Large Task",
+        "minutes": 90,
+        "description": "Major project work, requires breakdown",
+        "examples": ["Build entire module", "Complete project phase", "Major refactoring"],
+        "recommendation": "Should be broken down into smaller subtasks"
+      }
+    },
+    "estimation_factors": {
+      "complexity_multipliers": {
+        "simple": 1.0,
+        "moderate": 1.3,
+        "complex": 1.6,
+        "very_complex": 2.0
+      },
+      "interruption_buffers": {
+        "high_focus_required": 1.2,
+        "medium_focus_required": 1.1,
+        "low_focus_required": 1.0
+      },
+      "dependency_buffers": {
+        "no_dependencies": 1.0,
+        "internal_dependencies": 1.2,
+        "external_dependencies": 1.5
+      }
+    }
+  },
+  "meta": {
+    "last_updated": "2025-09-29",
+    "next_review_date": "2025-12-29",
+    "review_frequency": "quarterly",
+    "notes": [
+      "Categories expanded to include Content (Video), Community Engagement, and Sales & Marketing Execution to match CCGG tasks",
+      "Time blocks aligned with deep work (morning) and collaboration (afternoon)",
+      "Estimation guidelines unchanged for consistency across agents"
+    ]
+  }
+}

@@ -1,0 +1,66 @@
+# Dependencies
+node_modules/
+*/node_modules/
+
+# Production builds
+.next/
+build/
+dist/
+
+# Environment variables (CRITICAL: Never commit these)
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+backend/.env
+
+# System files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Local data files (processed results)
+data/daily/*.json
+data/processed/*.json
+data/reports/*.json
+data/input/*.txt
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Cache
+.npm
+.eslintcache
+.next/cache
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Python virtual environments
+venv/
+env/
+ENV/
+
+# Claude Code specific
+.claude/settings.local.json
+
+# Windows specific
+*.lnk

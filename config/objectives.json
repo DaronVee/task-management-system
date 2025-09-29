@@ -1,0 +1,79 @@
+{
+  "user_objectives": {
+    "primary_objectives": [
+      {
+        "id": "obj-1",
+        "title": "Grow CCGG Revenue Through Staged MRR Milestones",
+        "description": "Scale CCGG as the core asset and revenue machine through clear revenue stages, driving paid community growth and upgrades.",
+        "weight": 100,
+        "time_horizon": "staged (6 months to long-term)",
+        "key_results": [
+          "Phase 1 (Short-Term): Reach $5K MRR with 185 monthly or 84 annual members",
+          "Phase 2 (Next Milestone): Scale to $10K MRR with 370 monthly or 167 annual members",
+          "Phase 3 (Expansion): Grow to $25K MRR with 925 monthly or 417 annual members",
+          "Phase 4 (Long-Term): Reach $50K MRR before scaling to $100K MRR"
+        ]
+      },
+      {
+        "id": "obj-2",
+        "title": "Establish CCGG as the Lean GPT Business Category Leader",
+        "description": "Position CCGG as the pioneer of 'Lean GPT Entrepreneurship,' blending proven frameworks with AI assistants to deliver clarity and results in a skeptical, saturated market.",
+        "weight": 90,
+        "time_horizon": "24 months",
+        "key_results": [
+          "Develop and release advanced modules like AI Growth Engine, Money GPT, and Content Clone GPT",
+          "Showcase 12+ member success stories as proof points",
+          "Be recognized as the go-to paid community for Lean GPT Business"
+        ]
+      },
+      {
+        "id": "obj-3",
+        "title": "Build Financial Freedom Through Ownership",
+        "description": "Grow CCGG and AI Leaders into scalable, cash flow-producing assets, aiming toward $3M annual revenue and long-term financial independence.",
+        "weight": 95,
+        "time_horizon": "5 years",
+        "key_results": [
+          "Scale CCGG to $50K MRR with 2,000+ members before targeting $100K MRR",
+          "Expand AI Leaders into the top-tier implementation community",
+          "Achieve personal net worth target of $20M through owned business assets"
+        ]
+      }
+    ],
+    "secondary_objectives": [
+      {
+        "id": "obj-4",
+        "title": "Expand YouTube as Primary Traffic Engine",
+        "description": "Build and systematize YouTube as the #1 content and acquisition channel for CCGG growth.",
+        "weight": 85,
+        "time_horizon": "12 months",
+        "key_results": [
+          "Consistently publish 2 long-form videos weekly",
+          "Grow channel to 10,000+ subscribers",
+          "Achieve clear funnel conversion from YouTube views to paid CCGG signups"
+        ]
+      },
+      {
+        "id": "obj-5",
+        "title": "Strengthen Community Retention and Annual Upgrades",
+        "description": "Maximize CCGG retention (85%+ monthly, 95%+ annual) and drive annual upgrades through advanced tools, member success visibility, and premium AI Leaders benefits.",
+        "weight": 80,
+        "time_horizon": "ongoing",
+        "key_results": [
+          "Launch referral and affiliate program to incentivize growth",
+          "Maintain monthly retention above 85% and annual retention above 95%",
+          "Secure 30-40% annual upgrade rate across members"
+        ]
+      }
+    ]
+  },
+  "meta": {
+    "last_updated": "2025-09-29",
+    "next_review_date": "2025-12-29",
+    "review_frequency": "quarterly",
+    "notes": [
+      "Revenue objectives now reflect staged milestones: $5K, $10K, $25K, $50K, leading to $100K MRR",
+      "Objectives align with CCGG’s obsessional goal and category creation",
+      "Quarterly reviews should assess member acquisition, upgrade rates, and traffic execution"
+    ]
+  }
+}
