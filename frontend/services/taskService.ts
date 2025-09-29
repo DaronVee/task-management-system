@@ -11,6 +11,7 @@ export interface CreateTaskInput {
   time_block?: 'morning' | 'afternoon' | 'evening'
   tags?: string[]
   subtasks?: Omit<Subtask, 'id'>[]
+  success_criteria?: string
 }
 
 export interface UpdateTaskInput {
@@ -79,7 +80,7 @@ class TaskService {
         notes: subtask.notes
       })) || [],
       notes: [],
-      success_criteria: '',
+      success_criteria: input.success_criteria || '',
       dependencies: [],
       tags: input.tags || [],
       created_at: now,
