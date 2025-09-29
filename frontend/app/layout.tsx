@@ -35,8 +35,8 @@ export default function RootLayout({
             {/* Gradient Background */}
             <div className="absolute inset-0" style={{ background: 'var(--gradient-header)' }}></div>
 
-            {/* Glass Overlay */}
-            <div className="absolute inset-0 glass opacity-20"></div>
+            {/* Subtle overlay */}
+            <div className="absolute inset-0 bg-black/10"></div>
 
             {/* Content */}
             <div className="relative z-10 flex items-center" style={{ height: '200px' }}>

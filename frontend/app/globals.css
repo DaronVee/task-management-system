@@ -20,7 +20,7 @@ body {
   font-size: var(--text-base);
   line-height: var(--line-height-normal);
   color: var(--text-primary);
-  background: linear-gradient(180deg, var(--background-primary) 0%, var(--background-secondary) 100%);
+  background: var(--background-primary);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
@@ -46,8 +46,6 @@ body {
   white-space: nowrap;
   user-select: none;
   transition: all var(--duration-fast) var(--ease-spring);
-  transform: translateZ(0); /* Hardware acceleration */
-  will-change: transform, box-shadow;
 }
 
 .btn::before {
@@ -125,13 +123,9 @@ body {
   background: var(--background-primary);
   border: 1px solid var(--border-primary);
   border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-lg);
+  box-shadow: var(--shadow-md);
   transition: all var(--duration-normal) var(--ease-spring);
   overflow: hidden;
-  transform: translateZ(0); /* Hardware acceleration */
-  will-change: transform, box-shadow, border-color;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
 }
 
 .card::before {
@@ -145,8 +139,8 @@ body {
 
 .card:hover {
   border-color: var(--brand-primary-200);
-  box-shadow: var(--shadow-xl);
-  transform: translateY(-4px) scale(1.02);
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-2px);
 }
 
 .card:hover::before {
@@ -466,37 +460,20 @@ body {
   white-space: nowrap;
 }
 
-/* Glass morphism effects - 2025 style */
+/* Simplified glass effects */
 .glass {
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  box-shadow: var(--shadow-lg);
-}
-
-.glass-subtle {
   background: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-/* Ensure clean background foundation */
-.app-background {
-  background: linear-gradient(135deg,
-    var(--background-primary) 0%,
-    var(--background-secondary) 25%,
-    var(--background-primary) 50%,
-    var(--background-secondary) 75%,
-    var(--background-primary) 100%);
-  background-size: 400% 400%;
-  animation: subtle-gradient 20s ease-in-out infinite;
+.glass-subtle {
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-@keyframes subtle-gradient {
-  0%, 100% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
+/* Clean, solid background foundation */
+.app-background {
+  background: var(--background-primary);
 }
 
 /* Advanced Animation System - 2025 Standards */
@@ -762,9 +739,9 @@ body {
   animation: status-shimmer 1s ease-in-out;
 }
 
-/* Performance optimization classes */
+/* Simplified animation classes */
 .will-animate {
-  will-change: transform, opacity, box-shadow;
+  will-change: transform;
 }
 
 .animation-complete {
