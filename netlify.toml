@@ -7,7 +7,7 @@
   command = "npm run build"
 
   # Directory containing the build output
-  publish = ".next"
+  publish = "out"
 
 [build.environment]
   # Node.js version for build
@@ -21,7 +21,6 @@
   from = "/*"
   to = "/index.html"
   status = 200
-  conditions = {Role = ["admin"]}
 
 # Headers for security and performance
 [[headers]]
