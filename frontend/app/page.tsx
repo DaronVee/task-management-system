@@ -1,114 +1,69 @@
 'use client'
 
 import { useState, useEffect, useCallback, useMemo } from 'react'
-import { Task, TaskStats, ViewMode, TimeBlock } from '../types/task'
+import { Task } from '@/lib/supabase'
+import { TaskStats, ViewMode, TimeBlock } from '../types/task'
 import { TaskCard } from '../components/TaskCard'
 import { DashboardStats } from '../components/DashboardStats'
 import { DashboardHeader } from '../components/DashboardHeader'
 import { AIRecommendationPanel } from '../components/AIRecommendationPanel'
 import { TimeBlockSection } from '../components/TimeBlockSection'
+import TaskEditor from '../components/TaskEditor'
+import QuickAddTask from '../components/QuickAddTask'
+import FilterBar from '../components/FilterBar'
+import DroppableTimeBlock from '../components/DroppableTimeBlock'
+import DraggableTaskCard from '../components/DraggableTaskCard'
+import useTaskCRUD from '../hooks/useTaskCRUD'
+import { CreateTaskInput } from '@/services/taskService'
+import {
+  DndContext,
+  DragEndEvent,
+  DragOverEvent,
+  DragOverlay,
+  DragStartEvent,
+  closestCenter,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragCancelEvent
+} from '@dnd-kit/core'
 
-// Mock data with proper typing
-const mockTasks: Task[] = [
-  {
-    id: '1',
-    title: 'Build Affiliation System with Affiliation GPT',
-    description: 'Develop the technical affiliation system using the Affiliation GPT to create intelligent partner matching and commission tracking',
-    priority: 'P1',
-    status: 'not_started',
-    estimated_minutes: 180,
-    actual_minutes: 0,
-    time_block: 'morning',
-    category: 'development',
-    progress: 0,
-    tags: ['ai', 'backend', 'partnership'],
-    subtasks: [
-      { id: '1a', title: 'Design API endpoints', completed: false },
-      { id: '1b', title: 'Implement GPT integration', completed: false },
-      { id: '1c', title: 'Create partner dashboard', completed: false }
-    ],
-    notes: [],
-    success_criteria: 'Fully functional affiliate system with automated partner onboarding',
-    dependencies: [],
-    created_at: '2025-09-29T08:00:00',
-    updated_at: '2025-09-29T08:00:00'
-  },
-  {
-    id: '2',
-    title: 'Create messaging and positioning angles for affiliate program',
-    description: 'Develop key messaging strategies, value propositions, and positioning angles that resonate with potential affiliates',
-    priority: 'P1',
-    status: 'in_progress',
-    estimated_minutes: 60,
-    actual_minutes: 25,
-    time_block: 'morning',
-    category: 'planning',
-    progress: 40,
-    tags: ['messaging', 'strategy', 'marketing'],
-    subtasks: [
-      { id: '2a', title: 'Research competitor messaging', completed: true },
-      { id: '2b', title: 'Define value propositions', completed: false },
-      { id: '2c', title: 'Create messaging framework', completed: false }
-    ],
-    notes: [],
-    success_criteria: 'Complete messaging framework with 5 key positioning angles',
-    dependencies: [],
-    created_at: '2025-09-29T08:00:00',
-    updated_at: '2025-09-29T08:00:00'
-  },
-  {
-    id: '3',
-    title: 'Create affiliate resource pack',
-    description: 'Develop comprehensive resource pack including swipe copy, email templates, social media assets, and brand guidelines',
-    priority: 'P2',
-    status: 'completed',
-    estimated_minutes: 120,
-    actual_minutes: 115,
-    time_block: 'afternoon',
-    category: 'design',
-    progress: 100,
-    tags: ['resources', 'design', 'templates'],
-    subtasks: [
-      { id: '3a', title: 'Create swipe copy templates', completed: true },
-      { id: '3b', title: 'Design social media assets', completed: true },
-      { id: '3c', title: 'Develop brand guidelines', completed: true }
-    ],
-    notes: [],
-    success_criteria: 'Complete resource pack with all marketing materials',
-    dependencies: [],
-    created_at: '2025-09-29T08:00:00',
-    updated_at: '2025-09-29T08:00:00',
-    completed_at: '2025-09-29T14:30:00'
-  },
-  {
-    id: '4',
-    title: 'Set up analytics dashboard',
-    description: 'Configure comprehensive analytics to track affiliate performance, conversion rates, and ROI metrics',
-    priority: 'P2',
-    status: 'not_started',
-    estimated_minutes: 90,
-    actual_minutes: 0,
-    time_block: 'afternoon',
-    category: 'development',
-    progress: 0,
-    tags: ['analytics', 'tracking', 'metrics'],
-    subtasks: [],
-    notes: [],
-    success_criteria: 'Fully functional analytics dashboard with real-time metrics',
-    dependencies: [],
-    created_at: '2025-09-29T08:00:00',
-    updated_at: '2025-09-29T08:00:00'
-  }
-]
 
 export default function TaskDashboard() {
-  const [tasks] = useState<Task[]>(mockTasks)
+  // Real Supabase data instead of mock data
+  const {
+    tasks,
+    isLoading,
+    error,
+    createTask,
+    updateTask,
+    deleteTask,
+    toggleSubtask,
+    addSubtask,
+    refreshTasks
+  } = useTaskCRUD()
   const [viewMode, setViewMode] = useState<ViewMode>('swim')
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0])
   const [focusMode, setFocusMode] = useState(false)
   const [showKeyboardShortcuts, setShowKeyboardShortcuts] = useState(false)
+  const [isTaskEditorOpen, setIsTaskEditorOpen] = useState(false)
+  const [editingTask, setEditingTask] = useState<Task | null>(null)
+  const [filteredTasks, setFilteredTasks] = useState<Task[]>([])
+  const [activeId, setActiveId] = useState<string | null>(null)
 
-  // Calculate stats with memoization for performance
+  // DnD sensors
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    })
+  )
+
+  // Use filtered tasks for display (initial value is all tasks)
+  const displayTasks = filteredTasks.length > 0 || tasks.length === 0 ? filteredTasks : tasks
+
+  // Calculate stats with memoization for performance (use original tasks, not filtered)
   const stats: TaskStats = useMemo(() => {
     const completedTasks = tasks.filter(task => task.status === 'completed').length
     const inProgressTasks = tasks.filter(task => task.status === 'in_progress').length
@@ -121,6 +76,11 @@ export default function TaskDashboard() {
       estimatedHours: Math.round(totalMinutes / 60),
       completionPercentage: tasks.length > 0 ? Math.round((completedTasks / tasks.length) * 100) : 0
     }
+  }, [tasks])
+
+  // Initialize filtered tasks
+  useEffect(() => {
+    setFilteredTasks(tasks)
   }, [tasks])
 
   // Get current time block (memoized)
@@ -144,12 +104,12 @@ export default function TaskDashboard() {
     return tasks.filter(task => task.time_block === timeBlock)
   }, [tasks])
 
-  // Memoize tasks by time block for better performance
+  // Memoize tasks by time block for better performance (use display tasks)
   const tasksByTimeBlock = useMemo(() => ({
-    morning: tasks.filter(task => task.time_block === 'morning'),
-    afternoon: tasks.filter(task => task.time_block === 'afternoon'),
-    evening: tasks.filter(task => task.time_block === 'evening')
-  }), [tasks])
+    morning: displayTasks.filter(task => task.time_block === 'morning'),
+    afternoon: displayTasks.filter(task => task.time_block === 'afternoon'),
+    evening: displayTasks.filter(task => task.time_block === 'evening')
+  }), [displayTasks])
 
   // Get current recommendation (memoized)
   const currentRecommendation = useMemo(() =>
@@ -157,10 +117,98 @@ export default function TaskDashboard() {
     [tasks]
   )
 
-  const handleStartWorking = useCallback((taskId: string) => {
+  const handleStartWorking = useCallback(async (taskId: string) => {
     console.log('Starting work on task:', taskId)
-    // TODO: Implement task start logic
+    try {
+      await updateTask(taskId, { status: 'in_progress' })
+    } catch (error) {
+      console.error('Failed to start task:', error)
+    }
+  }, [updateTask])
+
+  const handleCreateTask = useCallback(async (taskData: CreateTaskInput) => {
+    try {
+      await createTask(taskData)
+      setIsTaskEditorOpen(false)
+    } catch (error) {
+      console.error('Failed to create task:', error)
+    }
+  }, [createTask])
+
+  const handleEditTask = useCallback((task: Task) => {
+    setEditingTask(task)
+    setIsTaskEditorOpen(true)
   }, [])
+
+  const handleUpdateTask = useCallback(async (taskData: CreateTaskInput) => {
+    if (!editingTask) return
+
+    try {
+      await updateTask(editingTask.id, {
+        title: taskData.title,
+        description: taskData.description,
+        priority: taskData.priority,
+        category: taskData.category,
+        estimated_minutes: taskData.estimated_minutes,
+        time_block: taskData.time_block,
+        tags: taskData.tags,
+        success_criteria: taskData.success_criteria
+      })
+      setIsTaskEditorOpen(false)
+      setEditingTask(null)
+    } catch (error) {
+      console.error('Failed to update task:', error)
+    }
+  }, [editingTask, updateTask])
+
+  const handleDeleteTask = useCallback(async (taskId: string) => {
+    if (window.confirm('Are you sure you want to delete this task?')) {
+      try {
+        await deleteTask(taskId)
+      } catch (error) {
+        console.error('Failed to delete task:', error)
+      }
+    }
+  }, [deleteTask])
+
+  // Drag and Drop handlers
+  const handleDragStart = useCallback((event: DragStartEvent) => {
+    setActiveId(event.active.id as string)
+  }, [])
+
+  const handleDragEnd = useCallback(async (event: DragEndEvent) => {
+    const { active, over } = event
+    setActiveId(null)
+
+    if (!over) return
+
+    const activeId = active.id as string
+    const overId = over.id as string
+
+    // Find the active task
+    const activeTask = tasks.find(task => task.id === activeId)
+    if (!activeTask) return
+
+    // If dropped on a time block, update the task's time block
+    if (over.data.current?.type === 'timeBlock') {
+      const newTimeBlock = over.data.current.timeBlock as TimeBlock
+
+      if (activeTask.time_block !== newTimeBlock) {
+        try {
+          await updateTask(activeId, { time_block: newTimeBlock })
+        } catch (error) {
+          console.error('Failed to move task to new time block:', error)
+        }
+      }
+    }
+  }, [tasks, updateTask])
+
+  const handleDragCancel = useCallback(() => {
+    setActiveId(null)
+  }, [])
+
+  // Get the active task for drag overlay
+  const activeTask = activeId ? tasks.find(task => task.id === activeId) : null
 
   const handleViewModeChange = useCallback((mode: ViewMode) => {
     setViewMode(mode)
@@ -168,8 +216,8 @@ export default function TaskDashboard() {
 
   const handleRefresh = useCallback(() => {
     console.log('Refreshing dashboard...')
-    // TODO: Implement refresh logic
-  }, [])
+    refreshTasks()
+  }, [refreshTasks])
 
   const handleDateChange = useCallback((date: string) => {
     setSelectedDate(date)
@@ -229,27 +277,80 @@ export default function TaskDashboard() {
     }
   }, [handleKeyDown])
 
-  return (
-    <div style={{
-      minHeight: '100vh'
-    }}>
-      <div style={{
-        maxWidth: '90rem',
-        margin: '0 auto',
-        padding: 'var(--space-6) var(--space-6) var(--space-8)'
-      }}>
+  // Show loading state
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading your tasks...</p>
+        </div>
+      </div>
+    )
+  }
 
-        {/* Dashboard Header */}
-        <DashboardHeader
-          stats={stats}
-          viewMode={viewMode}
-          selectedDate={selectedDate}
-          focusMode={focusMode}
-          onViewModeChange={handleViewModeChange}
-          onDateChange={handleDateChange}
-          onFocusModeToggle={handleFocusModeToggle}
-          onRefresh={handleRefresh}
-        />
+  // Show error state
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-red-600 mb-4">
+            <svg className="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.232 16.5c-.77.833.192 2.5 1.732 2.5z" />
+            </svg>
+          </div>
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">Error Loading Tasks</h2>
+          <p className="text-gray-600 mb-4">{error}</p>
+          <button
+            onClick={handleRefresh}
+            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <DndContext
+      sensors={sensors}
+      collisionDetection={closestCenter}
+      onDragStart={handleDragStart}
+      onDragEnd={handleDragEnd}
+      onDragCancel={handleDragCancel}
+    >
+      <div style={{
+        minHeight: '100vh'
+      }}>
+        <div style={{
+          maxWidth: '90rem',
+          margin: '0 auto',
+          padding: 'var(--space-6) var(--space-6) var(--space-8)'
+        }}>
+
+          {/* Dashboard Header */}
+          <DashboardHeader
+            stats={stats}
+            viewMode={viewMode}
+            selectedDate={selectedDate}
+            focusMode={focusMode}
+            onViewModeChange={handleViewModeChange}
+            onDateChange={handleDateChange}
+            onFocusModeToggle={handleFocusModeToggle}
+            onRefresh={handleRefresh}
+            onCreateTask={() => {
+              setEditingTask(null)
+              setIsTaskEditorOpen(true)
+            }}
+          />
+
+          {/* Filter Bar */}
+          <FilterBar
+            tasks={tasks}
+            onFilteredTasksChange={setFilteredTasks}
+            className="mb-8"
+          />
 
         {/* AI Recommendation Panel */}
         {currentRecommendation && (
@@ -260,41 +361,86 @@ export default function TaskDashboard() {
           />
         )}
 
-        {/* Time Blocks */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-8)' }}>
-          <TimeBlockSection
-            title="Morning Focus"
-            icon="🌅"
-            timeRange="9:00 AM - 12:00 PM"
-            timeBlock="morning"
-            tasks={tasksByTimeBlock.morning}
-            isCurrent={getCurrentTimeBlockEnum() === 'morning'}
-            onStartWorking={handleStartWorking}
+          {/* Time Blocks with Drag and Drop */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-8)' }}>
+            <DroppableTimeBlock
+              title="Morning Focus"
+              icon="🌅"
+              timeRange="9:00 AM - 12:00 PM"
+              timeBlock="morning"
+              tasks={tasksByTimeBlock.morning}
+              isCurrent={getCurrentTimeBlockEnum() === 'morning'}
+              onStartWorking={handleStartWorking}
+              onEditTask={handleEditTask}
+              onDeleteTask={handleDeleteTask}
+              onToggleSubtask={toggleSubtask}
+              onUpdateTask={updateTask}
+              quickAddComponent={
+                <QuickAddTask
+                  onAdd={createTask}
+                  timeBlock="morning"
+                  placeholder="Add a morning task..."
+                />
+              }
+            />
+
+            <DroppableTimeBlock
+              title="Afternoon Deep Work"
+              icon="☀️"
+              timeRange="1:00 PM - 5:00 PM"
+              timeBlock="afternoon"
+              tasks={tasksByTimeBlock.afternoon}
+              isCurrent={getCurrentTimeBlockEnum() === 'afternoon'}
+              onStartWorking={handleStartWorking}
+              onEditTask={handleEditTask}
+              onDeleteTask={handleDeleteTask}
+              onToggleSubtask={toggleSubtask}
+              onUpdateTask={updateTask}
+              quickAddComponent={
+                <QuickAddTask
+                  onAdd={createTask}
+                  timeBlock="afternoon"
+                  placeholder="Add an afternoon task..."
+                />
+              }
+            />
+
+            <DroppableTimeBlock
+              title="Evening Review"
+              icon="🌙"
+              timeRange="6:00 PM - 8:00 PM"
+              timeBlock="evening"
+              tasks={tasksByTimeBlock.evening}
+              isCurrent={getCurrentTimeBlockEnum() === 'evening'}
+              onStartWorking={handleStartWorking}
+              onEditTask={handleEditTask}
+              onDeleteTask={handleDeleteTask}
+              onToggleSubtask={toggleSubtask}
+              onUpdateTask={updateTask}
+              quickAddComponent={
+                <QuickAddTask
+                  onAdd={createTask}
+                  timeBlock="evening"
+                  placeholder="Add an evening task..."
+                />
+              }
+            />
+          </div>
+
+          {/* Task Editor Modal */}
+          <TaskEditor
+            isOpen={isTaskEditorOpen}
+            onClose={() => {
+              setIsTaskEditorOpen(false)
+              setEditingTask(null)
+            }}
+            onSave={editingTask ? handleUpdateTask : handleCreateTask}
+            task={editingTask}
+            mode={editingTask ? 'edit' : 'create'}
           />
 
-          <TimeBlockSection
-            title="Afternoon Deep Work"
-            icon="☀️"
-            timeRange="1:00 PM - 5:00 PM"
-            timeBlock="afternoon"
-            tasks={tasksByTimeBlock.afternoon}
-            isCurrent={getCurrentTimeBlockEnum() === 'afternoon'}
-            onStartWorking={handleStartWorking}
-          />
-
-          <TimeBlockSection
-            title="Evening Review"
-            icon="🌙"
-            timeRange="6:00 PM - 8:00 PM"
-            timeBlock="evening"
-            tasks={tasksByTimeBlock.evening}
-            isCurrent={getCurrentTimeBlockEnum() === 'evening'}
-            onStartWorking={handleStartWorking}
-          />
-        </div>
-
-        {/* Keyboard Shortcuts Help Modal */}
-        {showKeyboardShortcuts && (
+          {/* Keyboard Shortcuts Help Modal */}
+          {showKeyboardShortcuts && (
           <div
             className="fixed inset-0 z-50 flex items-center justify-center animate-modal-backdrop"
             style={{
@@ -383,9 +529,20 @@ export default function TaskDashboard() {
               </div>
             </div>
           </div>
-        )}
+          )}
 
+        </div>
       </div>
-    </div>
+
+      {/* Drag Overlay */}
+      <DragOverlay>
+        {activeTask ? (
+          <DraggableTaskCard
+            task={activeTask}
+            isDragOverlay={true}
+          />
+        ) : null}
+      </DragOverlay>
+    </DndContext>
   )
 }

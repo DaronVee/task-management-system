@@ -11,6 +11,7 @@ interface DashboardHeaderProps {
   onDateChange: (date: string) => void
   onFocusModeToggle: () => void
   onRefresh: () => void
+  onCreateTask?: () => void
   className?: string
 }
 
@@ -23,6 +24,7 @@ export const DashboardHeader = React.memo(function DashboardHeader({
   onDateChange,
   onFocusModeToggle,
   onRefresh,
+  onCreateTask,
   className = ''
 }: DashboardHeaderProps) {
   return (
@@ -82,6 +84,23 @@ export const DashboardHeader = React.memo(function DashboardHeader({
         </div>
 
         <div className="flex items-center gap-4 header-controls">
+          {/* Create Task Button */}
+          {onCreateTask && (
+            <button
+              onClick={onCreateTask}
+              className="btn btn-primary"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 'var(--space-2)'
+              }}
+              aria-label="Create new task"
+            >
+              <span style={{ fontSize: 'var(--text-lg)' }}>+</span>
+              New Task
+            </button>
+          )}
+
           {/* View Mode Switcher */}
           <div className="view-mode-switcher" style={{
             display: 'flex',

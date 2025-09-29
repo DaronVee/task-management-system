@@ -1,18 +1,22 @@
-import React from 'react'
-import { Task, TimeBlock } from '../types/task'
-import { Task as SupabaseTask } from '@/lib/supabase'
-import { TaskCard } from './TaskCard'
-import { UpdateTaskInput } from '@/services/taskService'
+'use client'
 
-interface TimeBlockSectionProps {
+import { useDroppable } from '@dnd-kit/core'
+import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
+import { Task } from '@/lib/supabase'
+import { UpdateTaskInput } from '@/services/taskService'
+import { TimeBlock } from '../types/task'
+import DraggableTaskCard from './DraggableTaskCard'
+import { cn } from '@/lib/utils'
+
+interface DroppableTimeBlockProps {
   title: string
   icon: string
   timeRange: string
   timeBlock: TimeBlock
-  tasks: SupabaseTask[]
+  tasks: Task[]
   isCurrent?: boolean
   onStartWorking: (taskId: string) => void
-  onEditTask?: (task: SupabaseTask) => void
+  onEditTask?: (task: Task) => void
   onDeleteTask?: (taskId: string) => void
   onToggleSubtask?: (taskId: string, subtaskId: string) => void
   onUpdateTask?: (taskId: string, updates: UpdateTaskInput) => void
@@ -26,7 +30,7 @@ const timeBlockGradients = {
   evening: 'linear-gradient(135deg, var(--neutral-600), var(--neutral-700))'
 }
 
-export const TimeBlockSection = React.memo(function TimeBlockSection({
+export default function DroppableTimeBlock({
   title,
   icon,
   timeRange,
@@ -40,11 +44,29 @@ export const TimeBlockSection = React.memo(function TimeBlockSection({
   onUpdateTask,
   quickAddComponent,
   className = ''
-}: TimeBlockSectionProps) {
+}: DroppableTimeBlockProps) {
+  const { isOver, setNodeRef } = useDroppable({
+    id: timeBlock,
+    data: {
+      type: 'timeBlock',
+      timeBlock
+    }
+  })
+
   const taskCount = tasks.length
+  const taskIds = tasks.map(task => task.id)
 
   return (
-    <section className={`card ${className}`} style={{ padding: 'var(--space-8)' }} aria-labelledby={`${timeBlock}-heading`}>
+    <section
+      ref={setNodeRef}
+      className={cn(
+        'card transition-all duration-200',
+        isOver && 'ring-2 ring-blue-400 ring-opacity-50 bg-blue-50',
+        className
+      )}
+      style={{ padding: 'var(--space-8)' }}
+      aria-labelledby={`${timeBlock}-heading`}
+    >
       <header className="flex items-center justify-between" style={{ marginBottom: 'var(--space-6)' }}>
         <div className="flex items-center gap-4">
           <div
@@ -97,7 +119,15 @@ export const TimeBlockSection = React.memo(function TimeBlockSection({
         {quickAddComponent}
       </div>
 
-      {taskCount === 0 ? (
+      {/* Drop Zone Indicator */}
+      {isOver && taskCount === 0 && (
+        <div className="border-2 border-dashed border-blue-400 rounded-lg p-8 mb-6 bg-blue-50 text-center">
+          <div className="text-blue-600 text-lg mb-2">Drop task here</div>
+          <div className="text-blue-500 text-sm">Move this task to {title.toLowerCase()}</div>
+        </div>
+      )}
+
+      {taskCount === 0 && !isOver ? (
         <div
           className="empty-state"
           style={{
@@ -130,30 +160,35 @@ export const TimeBlockSection = React.memo(function TimeBlockSection({
           </p>
         </div>
       ) : (
-        <div
-          className="task-grid"
-          style={{
-            display: 'grid',
-            gap: 'var(--space-6)',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 350px), 1fr))'
-          }}
-          role="list"
-          aria-label={`${title} tasks`}
-        >
-          {tasks.map(task => (
-            <div key={task.id} role="listitem">
-              <TaskCard
-                task={task}
-                onStartWorking={onStartWorking}
-                onEdit={onEditTask}
-                onDelete={onDeleteTask}
-                onToggleSubtask={onToggleSubtask}
-                onUpdate={onUpdateTask}
-              />
-            </div>
-          ))}
-        </div>
+        <SortableContext items={taskIds} strategy={verticalListSortingStrategy}>
+          <div
+            className={cn(
+              "task-grid transition-all duration-200",
+              isOver && "p-2 border-2 border-dashed border-blue-300 rounded-lg bg-blue-25"
+            )}
+            style={{
+              display: 'grid',
+              gap: 'var(--space-6)',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 350px), 1fr))'
+            }}
+            role="list"
+            aria-label={`${title} tasks`}
+          >
+            {tasks.map(task => (
+              <div key={task.id} role="listitem">
+                <DraggableTaskCard
+                  task={task}
+                  onStartWorking={onStartWorking}
+                  onEdit={onEditTask}
+                  onDelete={onDeleteTask}
+                  onToggleSubtask={onToggleSubtask}
+                  onUpdate={onUpdateTask}
+                />
+              </div>
+            ))}
+          </div>
+        </SortableContext>
       )}
     </section>
   )
-})
+}
