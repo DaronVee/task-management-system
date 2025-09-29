@@ -22,7 +22,7 @@ export default function QuickAddTask({
   const [title, setTitle] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [priority, setPriority] = useState<'P1' | 'P2' | 'P3'>('P2')
-  const [category, setCategory] = useState('personal')
+  const [category, setCategory] = useState<'development' | 'design' | 'admin' | 'learning' | 'personal' | 'meeting' | 'planning'>('personal')
   const [estimatedMinutes, setEstimatedMinutes] = useState(30)
 
   const inputRef = useRef<HTMLInputElement>(null)
@@ -39,7 +39,7 @@ export default function QuickAddTask({
   const parseSmartInput = (input: string): Partial<CreateTaskInput> => {
     let parsedTitle = input
     let parsedPriority: 'P1' | 'P2' | 'P3' = 'P2'
-    let parsedCategory = 'personal'
+    let parsedCategory: 'development' | 'design' | 'admin' | 'learning' | 'personal' | 'meeting' | 'planning' = 'personal'
     let parsedEstimatedMinutes = 30
 
     // Extract priority keywords
@@ -80,7 +80,7 @@ export default function QuickAddTask({
 
     Object.entries(categoryKeywords).forEach(([keyword, category]) => {
       if (input.toLowerCase().includes(keyword)) {
-        parsedCategory = category
+        parsedCategory = category as typeof parsedCategory
       }
     })
 
@@ -220,7 +220,7 @@ export default function QuickAddTask({
               <span className="text-gray-500">Category:</span>
               <select
                 value={category}
-                onChange={(e) => setCategory(e.target.value)}
+                onChange={(e) => setCategory(e.target.value as 'development' | 'design' | 'admin' | 'learning' | 'personal' | 'meeting' | 'planning')}
                 className="px-2 py-1 border border-gray-200 rounded text-xs"
               >
                 <option value="development">Development</option>

@@ -13,7 +13,7 @@ const taskSchema = z.object({
   title: z.string().min(1, 'Title is required').max(200, 'Title too long'),
   description: z.string().max(1000, 'Description too long').optional(),
   priority: z.enum(['P1', 'P2', 'P3']),
-  category: z.string(),
+  category: z.enum(['development', 'design', 'admin', 'learning', 'personal', 'meeting', 'planning']),
   estimated_minutes: z.number().min(5).max(480),
   time_block: z.enum(['morning', 'afternoon', 'evening']),
   tags: z.array(z.string()).optional(),

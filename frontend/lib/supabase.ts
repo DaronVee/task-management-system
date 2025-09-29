@@ -67,7 +67,7 @@ export interface Task {
   category: 'development' | 'design' | 'admin' | 'learning' | 'personal' | 'meeting' | 'planning'
   estimated_minutes: number
   actual_minutes: number
-  time_block?: 'morning' | 'afternoon' | 'evening'
+  time_block: 'morning' | 'afternoon' | 'evening'
   subtasks: Subtask[]
   notes: string[]
   success_criteria?: string

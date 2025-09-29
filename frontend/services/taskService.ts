@@ -6,7 +6,7 @@ export interface CreateTaskInput {
   title: string
   description?: string
   priority?: 'P1' | 'P2' | 'P3'
-  category?: string
+  category?: 'development' | 'design' | 'admin' | 'learning' | 'personal' | 'meeting' | 'planning'
   estimated_minutes?: number
   time_block?: 'morning' | 'afternoon' | 'evening'
   tags?: string[]
@@ -20,7 +20,7 @@ export interface UpdateTaskInput {
   priority?: 'P1' | 'P2' | 'P3'
   status?: 'not_started' | 'in_progress' | 'completed' | 'blocked' | 'cancelled'
   progress?: number
-  category?: string
+  category?: 'development' | 'design' | 'admin' | 'learning' | 'personal' | 'meeting' | 'planning'
   estimated_minutes?: number
   actual_minutes?: number
   time_block?: 'morning' | 'afternoon' | 'evening'

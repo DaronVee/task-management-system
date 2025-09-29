@@ -17,6 +17,21 @@ const nextConfig = {
   },
   poweredByHeader: false,
   reactStrictMode: true,
+  // Webpack configuration to handle Node.js modules
+  webpack: (config, { isServer }) => {
+    if (!isServer) {
+      // Don't resolve 'fs' module on the client to prevent this error
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        fs: false,
+        net: false,
+        dns: false,
+        child_process: false,
+        tls: false,
+      }
+    }
+    return config
+  },
 }
 
 module.exports = nextConfig
