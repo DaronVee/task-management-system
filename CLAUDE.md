@@ -2,11 +2,36 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## 🎨 UI/UX MODERNIZATION COMPLETED (September 29, 2025)
+## 🚀 DEPLOYMENT & UI/UX ARCHITECTURE COMPLETE (September 29, 2025)
 
-**STATUS**: ✅ COMPLETE - Best-in-class 2025 UI/UX standards implemented
+**STATUS**: ✅ COMPLETE - Production deployment with GitHub auto-deploy pipeline + Best-in-class 2025 UI/UX
 
-### Key Improvements Applied
+### 🌐 GitHub to Netlify Auto-Deploy Architecture
+
+**LIVE SITE**: https://daron-task-crusher.netlify.app/
+
+#### Deployment Pipeline
+```
+Local Development → GitHub Push → Netlify Auto-Build → Live Deployment
+     ↓                  ↓              ↓                ↓
+Claude Code      git push main    netlify.toml     Static CDN
+Brain Dumps         ↓           Auto-Detection      HTTPS +
+    ↓          GitHub Webhook      ↓              Custom Domain
+Supabase Sync      ↓         Next.js Build           ↓
+    ↓        Trigger Deploy      ↓           Professional Hosting
+Live UI Data       ↓         Static Export           ↓
+                Deploy        ↓              Real-time Updates
+               Complete    CDN Distribution
+```
+
+#### Architecture Benefits
+- **Frontend**: Professional Netlify hosting with CDN, HTTPS, custom domains
+- **Backend**: Claude Code remains local for AI-powered task processing
+- **Auto-Deploy**: Every `git push` triggers automatic deployment
+- **Real-time Sync**: Supabase handles live data synchronization
+- **Zero DevOps**: No server management, automatic scaling
+
+### 🎨 UI/UX Modernization Applied
 - **Design System**: Modern design tokens with CSS custom properties
 - **Component Architecture**: Professional TaskCard with animations and accessibility
 - **Keyboard Shortcuts**: Full keyboard navigation (⌘+R, ⌘+T, ⌘+1/2, ⌘+←/→)
@@ -14,27 +39,101 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Accessibility**: WCAG 2.2 AA compliance, screen reader support
 - **Visual Design**: Professional typography, color psychology, 8pt grid system
 
-### Files Modified
+### 📁 Key Configuration Files
+
+#### `netlify.toml` - Deployment Configuration
+```toml
+[build]
+  base = "frontend"              # Next.js app location
+  command = "npm run build"      # Build command
+  publish = "out"               # Static export directory
+
+[build.environment]
+  NODE_VERSION = "18.17.0"      # Node.js version
+  NEXT_TELEMETRY_DISABLED = "1"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200                  # SPA routing support
+```
+
+#### `frontend/next.config.js` - Static Export Configuration
+```javascript
+const nextConfig = {
+  output: 'export',             // Static site generation
+  trailingSlash: true,         // Netlify compatibility
+  distDir: 'out',              # Output directory
+  images: { unoptimized: true } // Static export optimization
+}
+```
+
+#### `.gitignore` - Security & Performance
+```
+# Environment variables (CRITICAL: Never commit)
+.env
+.env.local
+backend/.env
+
+# Build outputs
+.next/
+out/
+node_modules/
+
+# Data files (processed results)
+data/daily/*.json
+data/processed/*.json
+```
+
+### 🔧 Files Modified/Created
+
+#### New Deployment Files
+- `netlify.toml` - Netlify build and deployment configuration
+- `frontend/.env.example` - Environment variable template
+- `DEPLOYMENT.md` - Comprehensive deployment guide
+- `.gitignore` - Security and performance exclusions
+
+#### Updated Configuration
+- `frontend/next.config.js` - Added static export configuration
+- `frontend/app/page.tsx` - Fixed TypeScript errors for deployment
+
+#### Frontend Architecture
 - `frontend/styles/design-tokens.css` - Core design system
 - `frontend/app/globals.css` - Component styles and animations
 - `frontend/app/layout.tsx` - Modern header with gradient branding
 - `frontend/app/page.tsx` - Enhanced dashboard with keyboard shortcuts
-- `frontend/components/TaskList.tsx` - Streamlined with modern TaskCard
-- `frontend/components/modern/TaskCard.tsx` - Professional component with accessibility
+- `frontend/components/modern/TaskCard.tsx` - Professional component
 - `frontend/lib/hooks.ts` - Keyboard shortcuts and optimistic updates
-- `frontend/next.config.js` - Performance optimizations
 
-### Dependencies Added
-- `@heroicons/react` - Professional icon system
-- `react-window` - Virtualization for performance (optional component)
+### 📦 Dependencies & Technology Stack
+- **Frontend Framework**: Next.js 14 with static export
+- **Hosting**: Netlify with GitHub integration
+- **Database**: Supabase with real-time subscriptions
+- **UI Library**: @heroicons/react for professional icons
+- **Performance**: react-window for virtualization (optional)
+- **Version Control**: GitHub with automated deployment triggers
 
-### Build Status
-- ✅ Production build: PASSING
-- ✅ Development server: RUNNING on http://localhost:3000
-- ✅ TypeScript: NO ERRORS
-- ✅ Accessibility: WCAG 2.2 AA COMPLIANT
+### 🏗️ Deployment Status
+- ✅ **GitHub Repository**: https://github.com/DaronVee/task-management-system
+- ✅ **Live Application**: https://daron-task-crusher.netlify.app/
+- ✅ **Auto-Deploy**: Active on main branch pushes
+- ✅ **Build Status**: All builds passing with TypeScript validation
+- ✅ **Performance**: CDN distribution, optimized static assets
+- ✅ **Security**: HTTPS, environment variable isolation
 
-**Documentation**: See `UI_UX_MODERNIZATION.md` for complete details.
+### 🔄 Development Workflow
+```bash
+# Daily workflow
+python scripts/process_morning.py  # Process brain dumps with Claude Code
+python backend/sync.py push        # Sync to Supabase
+
+# Deploy changes
+git add .
+git commit -m "Your changes"
+git push                          # Triggers automatic Netlify deployment
+```
+
+**Documentation**: See `DEPLOYMENT.md` for step-by-step setup guide.
 
 ## CRITICAL: Brain Dump Processing Instructions
 
@@ -222,6 +321,17 @@ python backend/sync.py push
 - **Solution**: NEVER use emojis in any Python scripts or print statements
 - **Alternative**: Use text symbols like [OK], [FAIL], [SUCCESS] instead of ✅, ❌, 🚀
 
+#### 5. Netlify Deployment 404 Errors (September 29, 2025)
+- **Problem**: Netlify showing 404 "Page not found" instead of Next.js application
+- **Root Cause**: Next.js 14 requires static export configuration for Netlify hosting
+- **Solution Applied**:
+  - Updated `frontend/next.config.js` with `output: 'export'` and `distDir: 'out'`
+  - Modified `netlify.toml` publish directory from `.next` to `out`
+  - Fixed redirect rules for SPA routing (removed admin role condition)
+  - Added static export optimizations (`images: { unoptimized: true }`)
+- **Verification**: Local build test + automatic deployment triggered via git push
+- **Result**: https://daron-task-crusher.netlify.app/ now fully functional
+
 ### Common Pitfalls to NEVER Repeat
 
 1. ❌ **Don't use `.dict()`** - Always use `.model_dump()` for Pydantic V2
@@ -232,15 +342,30 @@ python backend/sync.py push
 6. ❌ **Don't ignore validation errors** - Test Pydantic models before sync
 7. ❌ **Don't skip MCP verification** - Use Chrome DevTools to confirm UI state
 8. ❌ **NEVER USE EMOJIS IN SCRIPTS** - Causes UnicodeEncodeError on Windows (cp1252 encoding)
+9. ❌ **Don't deploy Next.js without static export** - Netlify requires `output: 'export'` configuration
+10. ❌ **Don't assume `.next` publish directory** - Static export uses `out` directory
+11. ❌ **Don't forget SPA redirect rules** - Single Page Apps need catch-all redirects
+12. ❌ **Don't skip local build testing** - Always test `npm run build` before deploying
 
 ### Success Indicators Checklist
 
+#### Local Development Success
 ✅ **Frontend Status**: Shows "X of Y tasks completed" instead of "No tasks"
 ✅ **Task Display**: Task appears with title, description, priority badge, time estimate
 ✅ **Network Requests**: Supabase API returns 200 status with populated data array
 ✅ **Local Files**: data/daily/YYYY-MM-DD.json contains properly formatted tasks
 ✅ **Database**: Supabase table contains matching record with tasks array
 ✅ **Real-time Sync**: Changes in database immediately reflect in UI
+
+#### Deployment Success (September 29, 2025)
+✅ **Live Site**: https://daron-task-crusher.netlify.app/ loads TaskFlow Pro interface
+✅ **GitHub Integration**: Repository at https://github.com/DaronVee/task-management-system
+✅ **Auto-Deploy**: Push to main branch triggers automatic Netlify rebuild
+✅ **Build Status**: Next.js static export generates proper `out/` directory
+✅ **TypeScript**: No compilation errors during build process
+✅ **Static Assets**: All CSS, JS, and font files properly served via CDN
+✅ **SPA Routing**: Single Page Application navigation works correctly
+✅ **Performance**: Fast loading times with CDN distribution
 
 ### Commands for Quick Debugging
 
@@ -257,6 +382,16 @@ python backend/sync.py push
 
 # Direct database fix (if sync fails)
 python direct_insert.py
+
+# Deployment commands
+cd frontend && npm run build        # Test Next.js static export
+git status                         # Check for uncommitted changes
+git add . && git commit -m "Update"  # Commit changes
+git push                          # Trigger automatic Netlify deploy
+
+# GitHub repository management
+gh repo view                      # View repository details
+gh repo create --public          # Create new repository (if needed)
 
 # Frontend restart
 cd frontend && npm run dev
