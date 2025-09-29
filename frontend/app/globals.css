@@ -156,6 +156,93 @@ body {
   transform: translateY(-4px);
 }
 
+.card-suggested {
+  border: 2px solid var(--brand-primary-300);
+  box-shadow: var(--shadow-brand);
+  background: linear-gradient(135deg, var(--brand-primary-50) 0%, var(--neutral-0) 100%);
+}
+
+/* Stat Cards */
+.stat-card {
+  padding: var(--space-6);
+  border-radius: var(--radius-xl);
+  text-align: center;
+  border: 1px solid;
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.stat-card:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+.stat-card--success {
+  background: linear-gradient(135deg, var(--success-50) 0%, var(--success-100) 100%);
+  border-color: var(--success-200);
+}
+
+.stat-card--primary {
+  background: linear-gradient(135deg, var(--brand-primary-50) 0%, var(--brand-primary-100) 100%);
+  border-color: var(--brand-primary-200);
+}
+
+.stat-card--neutral {
+  background: linear-gradient(135deg, var(--neutral-50) 0%, var(--neutral-100) 100%);
+  border-color: var(--neutral-200);
+}
+
+.stat-card--warning {
+  background: linear-gradient(135deg, var(--warning-50) 0%, var(--warning-100) 100%);
+  border-color: var(--warning-200);
+}
+
+.stat-value {
+  font-size: var(--text-3xl);
+  font-weight: var(--font-weight-bold);
+  margin-bottom: var(--space-2);
+}
+
+.stat-card--success .stat-value {
+  color: var(--success-700);
+}
+
+.stat-card--primary .stat-value {
+  color: var(--brand-primary-700);
+}
+
+.stat-card--neutral .stat-value {
+  color: var(--neutral-700);
+}
+
+.stat-card--warning .stat-value {
+  color: var(--warning-700);
+}
+
+.stat-unit {
+  font-size: var(--text-xl);
+}
+
+.stat-label {
+  font-size: var(--text-sm);
+  font-weight: var(--font-weight-semibold);
+}
+
+.stat-card--success .stat-label {
+  color: var(--success-600);
+}
+
+.stat-card--primary .stat-label {
+  color: var(--brand-primary-600);
+}
+
+.stat-card--neutral .stat-label {
+  color: var(--neutral-600);
+}
+
+.stat-card--warning .stat-label {
+  color: var(--warning-600);
+}
+
 /* Modern Input System */
 .input {
   position: relative;
