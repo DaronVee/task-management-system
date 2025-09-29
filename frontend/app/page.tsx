@@ -6,11 +6,9 @@ import { TaskStats, ViewMode, TimeBlock } from '../types/task'
 import { TaskCard } from '../components/TaskCard'
 import { DashboardStats } from '../components/DashboardStats'
 import { DashboardHeader } from '../components/DashboardHeader'
-import { AIRecommendationPanel } from '../components/AIRecommendationPanel'
 import { TimeBlockSection } from '../components/TimeBlockSection'
 import TaskEditor from '../components/TaskEditor'
 import QuickAddTask from '../components/QuickAddTask'
-import FilterBar from '../components/FilterBar'
 import DroppableTimeBlock from '../components/DroppableTimeBlock'
 import DraggableTaskCard from '../components/DraggableTaskCard'
 import useTaskCRUD from '../hooks/useTaskCRUD'
@@ -42,13 +40,9 @@ export default function TaskDashboard() {
     addSubtask,
     refreshTasks
   } = useTaskCRUD()
-  const [viewMode, setViewMode] = useState<ViewMode>('swim')
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0])
-  const [focusMode, setFocusMode] = useState(false)
-  const [showKeyboardShortcuts, setShowKeyboardShortcuts] = useState(false)
   const [isTaskEditorOpen, setIsTaskEditorOpen] = useState(false)
   const [editingTask, setEditingTask] = useState<Task | null>(null)
-  const [filteredTasks, setFilteredTasks] = useState<Task[]>([])
   const [activeId, setActiveId] = useState<string | null>(null)
 
   // DnD sensors
@@ -60,8 +54,8 @@ export default function TaskDashboard() {
     })
   )
 
-  // Use filtered tasks for display (initial value is all tasks)
-  const displayTasks = filteredTasks.length > 0 || tasks.length === 0 ? filteredTasks : tasks
+  // Use all tasks for display
+  const displayTasks = tasks
 
   // Calculate stats with memoization for performance (use original tasks, not filtered)
   const stats: TaskStats = useMemo(() => {
@@ -78,10 +72,6 @@ export default function TaskDashboard() {
     }
   }, [tasks])
 
-  // Initialize filtered tasks
-  useEffect(() => {
-    setFilteredTasks(tasks)
-  }, [tasks])
 
   // Get current time block (memoized)
   const getCurrentTimeBlock = useCallback((): string => {
@@ -111,11 +101,6 @@ export default function TaskDashboard() {
     evening: displayTasks.filter(task => task.time_block === 'evening')
   }), [displayTasks])
 
-  // Get current recommendation (memoized)
-  const currentRecommendation = useMemo(() =>
-    tasks.find(task => task.status === 'not_started' && task.priority === 'P1'),
-    [tasks]
-  )
 
   const handleStartWorking = useCallback(async (taskId: string) => {
     console.log('Starting work on task:', taskId)
@@ -210,9 +195,6 @@ export default function TaskDashboard() {
   // Get the active task for drag overlay
   const activeTask = activeId ? tasks.find(task => task.id === activeId) : null
 
-  const handleViewModeChange = useCallback((mode: ViewMode) => {
-    setViewMode(mode)
-  }, [])
 
   const handleRefresh = useCallback(() => {
     console.log('Refreshing dashboard...')
@@ -223,59 +205,7 @@ export default function TaskDashboard() {
     setSelectedDate(date)
   }, [])
 
-  const handleFocusModeToggle = useCallback(() => {
-    setFocusMode(!focusMode)
-  }, [focusMode])
 
-  // Keyboard navigation and shortcuts
-  const handleKeyDown = useCallback((event: KeyboardEvent) => {
-    // Check for modifier keys (Ctrl/Cmd)
-    const isModified = event.ctrlKey || event.metaKey
-
-    // Handle keyboard shortcuts
-    if (isModified) {
-      switch (event.key.toLowerCase()) {
-        case 'r':
-          event.preventDefault()
-          handleRefresh()
-          break
-        case 'f':
-          event.preventDefault()
-          handleFocusModeToggle()
-          break
-        case '1':
-          event.preventDefault()
-          setViewMode('swim')
-          break
-        case '2':
-          event.preventDefault()
-          setViewMode('list')
-          break
-        case '3':
-          event.preventDefault()
-          setViewMode('kanban')
-          break
-        case '?':
-        case '/':
-          event.preventDefault()
-          setShowKeyboardShortcuts(!showKeyboardShortcuts)
-          break
-      }
-    }
-
-    // Handle escape key
-    if (event.key === 'Escape') {
-      setShowKeyboardShortcuts(false)
-    }
-  }, [showKeyboardShortcuts, focusMode, handleRefresh, handleFocusModeToggle])
-
-  // Add keyboard event listeners
-  useEffect(() => {
-    document.addEventListener('keydown', handleKeyDown)
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown)
-    }
-  }, [handleKeyDown])
 
   // Show loading state
   if (isLoading) {
@@ -332,12 +262,8 @@ export default function TaskDashboard() {
           {/* Dashboard Header */}
           <DashboardHeader
             stats={stats}
-            viewMode={viewMode}
             selectedDate={selectedDate}
-            focusMode={focusMode}
-            onViewModeChange={handleViewModeChange}
             onDateChange={handleDateChange}
-            onFocusModeToggle={handleFocusModeToggle}
             onRefresh={handleRefresh}
             onCreateTask={() => {
               setEditingTask(null)
@@ -345,21 +271,6 @@ export default function TaskDashboard() {
             }}
           />
 
-          {/* Filter Bar */}
-          <FilterBar
-            tasks={tasks}
-            onFilteredTasksChange={setFilteredTasks}
-            className="mb-8"
-          />
-
-        {/* AI Recommendation Panel */}
-        {currentRecommendation && (
-          <AIRecommendationPanel
-            recommendation={currentRecommendation}
-            currentTimeBlock={getCurrentTimeBlock()}
-            onStartWorking={handleStartWorking}
-          />
-        )}
 
           {/* Time Blocks with Drag and Drop */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-8)' }}>
@@ -439,97 +350,6 @@ export default function TaskDashboard() {
             mode={editingTask ? 'edit' : 'create'}
           />
 
-          {/* Keyboard Shortcuts Help Modal */}
-          {showKeyboardShortcuts && (
-          <div
-            className="fixed inset-0 z-50 flex items-center justify-center animate-modal-backdrop"
-            style={{
-              background: 'var(--background-overlay)'
-            }}
-            onClick={() => setShowKeyboardShortcuts(false)}
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="shortcuts-title"
-          >
-            <div
-              className="card animate-modal-slide"
-              style={{
-                maxWidth: '32rem',
-                margin: 'var(--space-4)',
-                padding: 'var(--space-8)'
-              }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="flex items-center justify-between" style={{ marginBottom: 'var(--space-6)' }}>
-                <h2
-                  id="shortcuts-title"
-                  style={{
-                    fontSize: 'var(--text-2xl)',
-                    fontWeight: 'var(--font-weight-bold)',
-                    color: 'var(--text-primary)'
-                  }}
-                >
-                  Keyboard Shortcuts
-                </h2>
-                <button
-                  onClick={() => setShowKeyboardShortcuts(false)}
-                  className="btn btn-ghost"
-                  style={{
-                    minWidth: 'auto',
-                    padding: 'var(--space-2)'
-                  }}
-                  aria-label="Close shortcuts help"
-                >
-                  ✕
-                </button>
-              </div>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-                <div className="flex justify-between items-center">
-                  <span style={{ color: 'var(--text-secondary)' }}>Refresh Dashboard</span>
-                  <kbd className="kbd">⌘ + R</kbd>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span style={{ color: 'var(--text-secondary)' }}>Toggle Focus Mode</span>
-                  <kbd className="kbd">⌘ + F</kbd>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span style={{ color: 'var(--text-secondary)' }}>Switch to Swim View</span>
-                  <kbd className="kbd">⌘ + 1</kbd>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span style={{ color: 'var(--text-secondary)' }}>Switch to List View</span>
-                  <kbd className="kbd">⌘ + 2</kbd>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span style={{ color: 'var(--text-secondary)' }}>Switch to Kanban View</span>
-                  <kbd className="kbd">⌘ + 3</kbd>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span style={{ color: 'var(--text-secondary)' }}>Show/Hide Shortcuts</span>
-                  <kbd className="kbd">⌘ + ?</kbd>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span style={{ color: 'var(--text-secondary)' }}>Close Modal</span>
-                  <kbd className="kbd">Esc</kbd>
-                </div>
-              </div>
-
-              <div
-                style={{
-                  marginTop: 'var(--space-6)',
-                  padding: 'var(--space-4)',
-                  background: 'var(--background-tertiary)',
-                  borderRadius: 'var(--radius-lg)',
-                  fontSize: 'var(--text-sm)',
-                  color: 'var(--text-secondary)'
-                }}
-              >
-                💡 Tip: Use Tab to navigate between interactive elements and Enter/Space to activate them.
-              </div>
-            </div>
-          </div>
-          )}
 
         </div>
       </div>
